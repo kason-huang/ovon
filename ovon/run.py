@@ -104,6 +104,7 @@ def main():
     with read_write(config):
         edit_config(config, args)
 
+    print("config:", config)
     execute_exp(config, args.run_type)
 
 

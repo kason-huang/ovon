@@ -20,3 +20,10 @@ slurm_logs/
 
 # scripts
 scripts/
+
+# package
+transformers
+CLIP
+frontier_exploration
+
+*.pth

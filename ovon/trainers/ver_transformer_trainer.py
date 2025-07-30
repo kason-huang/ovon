@@ -192,6 +192,9 @@ class VERTransformerTrainer(VERTrainer):
         self.environment_workers = construct_environment_workers(
             self.config, self.mp_ctx, self.queues
         )
+        print("self.config.habitat_baselines.num_environments len:", self.config.habitat_baselines.num_environments)
+        print("self.queues len:", self.queues)
+        print("environment_workers len:", len(self.environment_workers))
         [ew.start() for ew in self.environment_workers]
         [ew.reset() for ew in self.environment_workers]
 
@@ -457,6 +460,9 @@ class VERTransformerTrainer(VERTrainer):
             iw.set_rollouts(self.rollouts)
             iw.start()
 
+        print("self.inference_workers len", len(self.inference_workers))
+        print("before ews_to_wait")
+        print("self.environment_workers len", len(self.environment_workers))
         ews_to_wait = []
         for i, ew in enumerate(self.environment_workers):
             ew.set_transfer_buffers(self._transfer_buffers)
@@ -471,6 +477,9 @@ class VERTransformerTrainer(VERTrainer):
 
         [a.wait_sync() for a in ews_to_wait]
         ews_to_wait = []
+        print("after ews_to_wait")
+        print("self._is_distributed:", self._is_distributed)
+        print("============================================")
 
         if self._is_distributed:
             torch.distributed.barrier()
@@ -491,6 +500,7 @@ class VERTransformerTrainer(VERTrainer):
         Returns:
             None
         """
+        print("ver_transformer_train start")
         policy_cfg = self.config.habitat_baselines.rl.policy
         if not policy_cfg.finetune.enabled:
             return super().train()
@@ -507,6 +517,7 @@ class VERTransformerTrainer(VERTrainer):
             self.num_updates_done = requeue_stats["num_updates_done"]
 
         self._init_train(resume_state)
+        print("policy_cfg.finetune.enabled:", policy_cfg.finetune.enabled)
 
         count_checkpoints = 0
         policy_cfg = self.config.habitat_baselines.rl.policy
@@ -544,6 +555,7 @@ class VERTransformerTrainer(VERTrainer):
             self.preemption_decider.start_rollout()
 
         while not self.is_done():
+            print("update ver_transformation train")
             profiling_wrapper.on_start_step()
 
             if ppo_cfg.use_linear_clip_decay:

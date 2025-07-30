@@ -256,6 +256,7 @@ class DAggerPolicyMixin:
         masks,
         deterministic=False,
     ):
+        # print("observations:", observations)
         if not hasattr(self, "action_distribution"):
             # For the dummy policy class that has no neural net
             return super().act(  # type: ignore
@@ -288,17 +289,30 @@ class DAggerPolicyMixin:
         n = action.shape[0]
         value = torch.zeros(n, 1, device=action.device)
         action_log_probs = torch.zeros(n, 1, device=action.device)
+        
+      #  print("no cheat: value:", value.shape, value)
+        # print("no cheat: action:", action.shape, action)
+      #  print("no cheat: action_log_probs:", action_log_probs.shape, action_log_probs)
+      #  print("no cheat: rnn_hidden_states:", rnn_hidden_states.shape, rnn_hidden_states)
         return value, action, action_log_probs, rnn_hidden_states
 
     @staticmethod
     def cheat(observations, rnn_hidden_states):
         action = observations["teacher_label"].long()
+        # 关键修复：添加动作维度 [num_envs] → [num_envs, action_dim]
+        if action.dim() == 1:  # 防御性检查，避免重复扩展
+            action = action.unsqueeze(-1)  # 在末尾添加新维度
 
         num_envs = observations["teacher_label"].shape[0]
         device = observations["teacher_label"].device
 
         action_log_probs = torch.zeros(num_envs, 1).to(device)
         value = torch.zeros(num_envs, 1).to(device)
+
+    #    print("cheat: value:", value.shape, value)
+        # print("cheat: action:", action.shape, action)
+    #    print("cheat: action_log_probs:", action_log_probs.shape, action_log_probs)
+    #    print("cheat: rnn_hidden_states:", rnn_hidden_states.shape, rnn_hidden_states)
 
         return value, action, action_log_probs, rnn_hidden_states
 

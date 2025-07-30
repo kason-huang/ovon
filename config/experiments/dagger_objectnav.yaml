@@ -3,10 +3,14 @@
 defaults:
   - /habitat_baselines: habitat_baselines_rl_config_base
   - /habitat_baselines/rl/policy/obs_transforms:
-    - resize
-  - objectnav_stretch_hm3d
-  - override /habitat/task/lab_sensors:
-    - clip_objectgoal_sensor
+    - center_cropper_base
+    - resize_shortest_edge_base
+    - relabel_teacher_actions
+  - /habitat/task/lab_sensors:
+    - objnav_explorer
+  - /habitat/task/measurements:
+    - frontier_exploration_map
+  - objectnav_locobot_hm3d
   - _self_
 
 habitat:
@@ -17,22 +21,10 @@ habitat:
     success_reward: 2.5
     slack_reward: -1e-3
     lab_sensors:
-      clip_objectgoal_sensor:
-        cache: data/text_embeddings/siglip.pkl
-    measurements:
-      success:
-        success_distance: 0.25
-      distance_to_goal:
-        type: OVONDistanceToGoal
+      objnav_explorer:
+        map_resolution: 128
   dataset:
-    type: "OVON-v1"
-    split: train
-    data_path: data/datasets/ovon/hm3d/v1/{split}/{split}.json.gz
-  simulator:
-    type: "OVONSim-v0"
-    navmesh_settings:
-      agent_max_climb: 0.1
-      cell_height: 0.05
+    split: train_single_story
 
 habitat_baselines:
   torch_gpu_id: 0
@@ -40,13 +32,12 @@ habitat_baselines:
   video_dir: "video_dir"
   test_episode_count: -1
   eval_ckpt_path_dir: "data/new_checkpoints"
-  num_environments: 8
+  num_environments: 32
   checkpoint_folder: "data/new_checkpoints"
-  trainer_name: "ver"
-  num_updates: -1
-  total_num_steps: 150000000
+  trainer_name: "ver_dagger"
+  num_updates: 270000
   log_interval: 10
-  num_checkpoints: 50
+  num_checkpoints: 1000
   # Force PyTorch to be single threaded as
   # this improves performance considerably
   force_torch_single_threaded: True
@@ -58,24 +49,21 @@ habitat_baselines:
 
     policy:
       name: "PointNavResNetCLIPPolicy"
-      backbone: "siglip"
-      fusion_type: "concat"
-      use_vis_query: True
-      use_residual: True
-      residual_vision: True
-      rgb_only: False
+      obs_transforms:
+        relabel_teacher_actions:
+          teacher_label: "objnav_explorer"
 
     ppo:
       # ppo params
       clip_param: 0.2
-      ppo_epoch: 1
+      ppo_epoch: 4
       num_mini_batch: 2
       value_loss_coef: 0.5
       entropy_coef: 0.01
       lr: 2.5e-4
       eps: 1e-5
       max_grad_norm: 0.2
-      num_steps: 100
+      num_steps: 64
       use_gae: True
       gamma: 0.99
       tau: 0.95
@@ -103,5 +91,6 @@ habitat_baselines:
       reset_critic: True
 
       # Model parameters
+      backbone: resnet50_clip_avgpool
       rnn_type: LSTM
-      num_recurrent_layers: 4
+      num_recurrent_layers: 2

@@ -59,11 +59,12 @@ class VERDAggerTrainer(VERTransformerTrainer):
             self.config.habitat_baselines.rl.policy.name
         )
         observation_space = self.obs_space
+        print("dagger_trainer--self.obs_space:", self.obs_space)
         self.obs_transforms = get_active_obs_transforms(self.config)
         observation_space = apply_obs_transforms_obs_space(
             observation_space, self.obs_transforms
         )
-
+        print("dagger_trainer--observation_space:", observation_space)
         self.actor_critic = policy.from_config(
             self.config,
             observation_space,

@@ -113,6 +113,7 @@ class TransformerEncoder(nn.Module):
                 inputs_embeds=feats,
                 position_ids=position_ids,
                 attention_mask=attention_mask.to(gpu_device),
+                **{k: v for k, v in kwargs.items() if k != 'cache_position'}
             )
             feats = extract_hidden_features(output.last_hidden_state, attention_mask)
         else:
@@ -133,7 +134,7 @@ class TransformerEncoder(nn.Module):
             feats = feats.unsqueeze(1)  # (batch_size, 1, embed_dim), seq_len of 1 step
 
             # Create attention mask
-            step_ids = rnn_build_seq_info["step_id"].reshape(-1)
+            step_ids = rnn_build_seq_info["step_id"]#.reshape(-1)
             attention_mask = create_mask_with_trailing_ones(
                 step_ids + 1, S=self.max_context_length
             )
@@ -143,6 +144,7 @@ class TransformerEncoder(nn.Module):
                 position_ids=step_ids,
                 attention_mask=attention_mask,
                 past_key_values=tensor_to_kv_cache(rnn_hidden_states),
+                **{k: v for k, v in kwargs.items() if k != 'cache_position'}
             )
 
             cache = truncate_cache(

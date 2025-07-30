@@ -63,7 +63,9 @@ class ILEnvironmentWorker(EnvironmentWorker):
         if hasattr(env_config.habitat_baselines.rl.policy, "obs_transforms"):
             for obs_transform_config in obs_trans_conf.values():
                 if hasattr(obs_transform_config, "teacher_label"):
+                    print("obs_transform_config:", obs_transform_config)
                     teacher_label = obs_transform_config.teacher_label
+                    print("teacher_label:", teacher_label)
                     break
         assert teacher_label is not None, "teacher_label not found in config"
         WorkerBase.__init__(

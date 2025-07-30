@@ -1,22 +1,24 @@
 import hashlib
 import random
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 import numpy as np
 from gym import spaces
 from habitat.core.registry import registry
-from habitat.core.simulator import RGBSensor, Sensor, SensorTypes, Simulator
+from habitat.core.simulator import RGBSensor, Sensor, SensorTypes, Simulator, Observations
 from habitat.core.utils import try_cv2_import
 from habitat.sims.habitat_simulator.habitat_simulator import HabitatSim
 from habitat.tasks.nav.nav import NavigationEpisode
+from habitat.core.embodied_task import EmbodiedTask
+from habitat.sims.habitat_simulator.actions import HabitatSimActions
 
+from ovon.task.object_nav_task import ObjectNavigationTask
 from ovon.utils.utils import load_pickle
 
 if TYPE_CHECKING:
     from omegaconf import DictConfig
 
 cv2 = try_cv2_import()
-
 
 @registry.register_sensor
 class ClipObjectGoalSensor(Sensor):
@@ -336,3 +338,54 @@ class StepIDSensor(Sensor):
         else:
             self._elapsed_steps += 1
         return self._elapsed_steps
+
+
+def get_habitat_sim_action(action):
+    if action == "TURN_RIGHT":
+        return HabitatSimActions.turn_right
+    elif action == "TURN_LEFT":
+        return HabitatSimActions.turn_left
+    elif action == "MOVE_FORWARD":
+        return HabitatSimActions.move_forward
+    elif action == "LOOK_UP":
+        return HabitatSimActions.look_up
+    elif action == "LOOK_DOWN":
+        return HabitatSimActions.look_down
+    return HabitatSimActions.stop
+
+@registry.register_sensor
+class DemonstrationSensor(Sensor):
+    def __init__(self, **kwargs):
+        self.uuid = "next_actions"
+        self.observation_space = spaces.Discrete(1)
+        self.timestep = 0
+        self.prev_action = 0
+
+    def _get_uuid(self, *args: Any, **kwargs: Any) -> str:
+        return self.uuid
+
+    def _get_observation(
+        self,
+        observations: Dict[str, Observations],
+        episode,
+        task,
+        **kwargs
+    ):
+        # Fetch next action as observation
+        if task._is_resetting:  # reset
+            self.timestep = 1
+
+        if self.timestep < len(episode.reference_replay):
+            action_name = episode.reference_replay[self.timestep].action
+            action = get_habitat_sim_action(action_name)
+            # print("self.timestep:", self.timestep)
+            # print("action_name:", action_name)
+            # print("episode:", episode.scene_id, episode.object_category, len(episode.reference_replay))
+        else:
+            action = 0
+
+        self.timestep += 1
+        return action
+
+    def get_observation(self, **kwargs):
+        return self._get_observation(**kwargs)

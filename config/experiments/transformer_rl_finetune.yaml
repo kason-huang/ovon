@@ -49,7 +49,7 @@ habitat_baselines:
   video_dir: "video_dir"
   test_episode_count: -1
   eval_ckpt_path_dir: "data/new_checkpoints"
-  num_environments: 32
+  num_environments: 16
   checkpoint_folder: "data/new_checkpoints"
   trainer_name: "ver_transformer"
   num_updates: -1
@@ -97,7 +97,7 @@ habitat_baselines:
       num_mini_batch: 2
       value_loss_coef: 0.5
       entropy_coef: 0.01
-      lr: 2.5e-4
+      lr: 1.5e-5
       eps: 1e-5
       max_grad_norm: 0.2
       num_steps: 100
@@ -117,11 +117,11 @@ habitat_baselines:
       # The PyTorch distributed backend to use
       distrib_backend: NCCL
       # Visual encoder backbone
-      pretrained_weights: data/ddppo-models/gibson-2plus-resnet50.pth
+      pretrained_weights: data/eval_checkpoints/ckpt.18.pth
       # Initialize with pretrained weights
       pretrained: False
       # Initialize just the visual encoder backbone with pretrained weights
-      pretrained_encoder: False
+      pretrained_encoder: True
       # Whether or not the visual encoder backbone will be trained.
       train_encoder: False
       # Whether or not to reset the critic linear layer
