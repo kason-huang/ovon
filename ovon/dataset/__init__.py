@@ -7,3 +7,4 @@ from ovon.dataset import (
 )
 from ovon.dataset.ovon_dataset import OVONDatasetV1
 from ovon.dataset.objectnav_dataset import ObjectNavDatasetV2
+from ovon.dataset.goat_dataset import GoatDatasetV1

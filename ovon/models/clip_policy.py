@@ -16,6 +16,7 @@ from ovon.models.encoders.cma_xattn import CrossModalAttention
 from ovon.models.encoders.cross_attention import CrossAttention
 from ovon.models.encoders.make_encoder import make_encoder
 from ovon.task.sensors import ClipObjectGoalSensor
+from ovon.task.goat_sensors import GoatGoalSensor
 
 if TYPE_CHECKING:
     from omegaconf import DictConfig
@@ -440,6 +441,79 @@ class OVONNet(Net):
             rnn_type=self.rnn_type,
             num_layers=self._num_recurrent_layers,
         )
+    
+    def forward_new(
+        self,
+        observations: Dict[str, torch.Tensor],
+        rnn_hidden_states,
+        prev_actions,
+        masks,
+        rnn_build_seq_info: Optional[Dict[str, torch.Tensor]] = None,
+    ) -> Tuple[torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
+        # We CANNOT use observations.get() here because
+        # self.visual_encoder(observations) is an expensive operation. Therefore,
+        # we need `# noqa: SIM401`
+        if (  # noqa: SIM401
+            PointNavResNetNet.PRETRAINED_VISUAL_FEATURES_KEY in observations
+        ):
+            visual_feats = observations[
+                PointNavResNetNet.PRETRAINED_VISUAL_FEATURES_KEY
+            ]
+        else:
+            visual_feats = self.visual_encoder(observations)
+
+        visual_feats = self.visual_fc(visual_feats)
+        # object_goal = observations[ClipObjectGoalSensor.cls_uuid]
+        goat_goal = observations[GoatGoalSensor.cls_uuid]
+        goal = goat_goal['value']
+
+        if self._fusion_type.xattn:
+            visual_feats = self.cross_attention(goal, visual_feats)
+
+        x = [visual_feats]
+
+        if self._fusion_type.concat and not self._fusion_type.late_fusion:
+            x.append(goal)
+
+        if EpisodicCompassSensor.cls_uuid in observations and self._use_odom:
+            compass_observations = torch.stack(
+                [
+                    torch.cos(observations[EpisodicCompassSensor.cls_uuid]),
+                    torch.sin(observations[EpisodicCompassSensor.cls_uuid]),
+                ],
+                -1,
+            )
+            x.append(self.compass_embedding(compass_observations.squeeze(dim=1)))
+
+        if EpisodicGPSSensor.cls_uuid in observations and self._use_odom:
+            x.append(self.gps_embedding(observations[EpisodicGPSSensor.cls_uuid]))
+
+        if self._use_prev_action:
+            prev_actions = prev_actions.squeeze(-1)
+            start_token = torch.zeros_like(prev_actions)
+            # The mask means the previous action will be zero, an extra dummy action
+            prev_actions = self.prev_action_embedding(
+                torch.where(masks[:, -1:].view(-1), prev_actions + 1, start_token)
+            )
+
+            x.append(prev_actions)
+
+        out = torch.cat(x, dim=1)
+
+        out, rnn_hidden_states = self.state_encoder(
+            out, rnn_hidden_states, masks, rnn_build_seq_info
+        )
+
+        if self._fusion_type.late_fusion:
+            out = (out + visual_feats) * self.late_fusion_fc(goal)
+
+        aux_loss_state = {
+            "rnn_output": out,
+            "perception_embed": visual_feats,
+        }
+
+        return out, rnn_hidden_states, aux_loss_state
+
 
     def forward(
         self,

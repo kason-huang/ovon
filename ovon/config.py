@@ -72,6 +72,17 @@ class StepIDSensorConfig(LabSensorConfig):
 class DemonstrationSensorConfig(LabSensorConfig):
     type: str = "DemonstrationSensor"
 
+
+
+@dataclass
+class GoatGoalSensorConfig(LabSensorConfig):
+    type: str = "GoatGoalSensor"
+    object_cache: str = ""
+    language_cache: str = ""
+    image_cache: str = ""
+    image_cache_encoder: str = ""
+
+
 ##########################################################################
 # Measurements
 ##########################################################################
@@ -324,6 +335,14 @@ cs.store(
     node=CollisionsMeasurementConfig,
 )
 
+
+cs.store(
+    package=f"habitat.task.lab_sensors.goat_goal_sensor",
+    group="habitat/task/lab_sensors",
+    name="goat_goal_sensor",
+    node=GoatGoalSensorConfig,
+)
+
 # cs.store(
 #     group="habitat_baselines",
 #     name="habitat_baselines_rl_config_base",
@@ -341,3 +360,5 @@ class HabitatConfigPlugin(SearchPathPlugin):
             provider="habitat_baselines",
             path="pkg://habitat_baselines/config/",
         )
+
+

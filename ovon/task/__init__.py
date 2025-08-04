@@ -1,0 +1,1 @@
+from ovon.task.goat_sensors import GoatGoalSensor

@@ -139,6 +139,7 @@ class ClipImageGoalSensor(Sensor):
         return self.image_goal
 
 
+
 @registry.register_sensor
 class ClipGoalSelectorSensor(Sensor):
     cls_uuid: str = "clip_goal_selector"

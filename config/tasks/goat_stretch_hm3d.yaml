@@ -1,0 +1,61 @@
+# @package _global_
+
+defaults:
+  - /habitat: habitat_config_base
+  - /habitat/simulator/agents@habitat.simulator.agents.main_agent: rgb_agent
+  - /habitat/task: task_config_base
+  # - /habitat/task/measurements:
+  #   - frontier_exploration_map
+  - /habitat/task/actions:
+    - stop
+    - move_forward
+    - turn_left
+    - turn_right
+    - look_up
+    - look_down
+  - /habitat/task/lab_sensors:
+    # - objnav_explorer
+    - clip_objectgoal_sensor
+    - step_id_sensor
+    - goat_goal_sensor
+    # - instance_imagegoal_sensor # for cache debug, we cannot use, because the dataset must be InstanceImageNavDatsetV1
+  - _self_
+
+# habitat:
+#   # env_task: GymGoatEnv
+#   environment:
+#     max_episode_steps: 5000
+habitat:
+  environment:
+    iterator_options:
+      max_scene_repeat_steps: 50000
+  task:
+    type: Goat-v1
+    success_reward: 2.5
+    slack_reward: -1e-3
+    lab_sensors:
+      # objnav_explorer:
+      #   map_resolution: 128
+      #   beeline_dist_thresh: 3.5
+      #   visibility_dist: 3.0
+      #   area_thresh: 1.5
+      #   success_distance: 0.25
+      #   fov: 42
+      clip_objectgoal_sensor:
+        cache: data/text_embeddings/siglip.pkl
+    # measurements:
+    #   success:
+    #     success_distance: 0.25
+    #   distance_to_goal:
+    #     type: OVONDistanceToGoal
+  dataset:
+    type: "Goat-v1"
+    split: train
+    data_path: data/datasets/ovon/hm3d/v2/{split}/{split}.json.gz
+  simulator:
+    type: "OVONSim-v0"
+    navmesh_settings:
+      agent_max_climb: 0.1
+      cell_height: 0.05
+    habitat_sim_v0:
+      allow_sliding: True

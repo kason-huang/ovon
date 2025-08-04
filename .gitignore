@@ -24,6 +24,5 @@ scripts/
 # package
 transformers
 CLIP
-frontier_exploration
 
 *.pth
