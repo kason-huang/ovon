@@ -26,3 +26,4 @@ transformers
 CLIP
 
 *.pth
+tmp/

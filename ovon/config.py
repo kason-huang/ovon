@@ -82,6 +82,13 @@ class GoatGoalSensorConfig(LabSensorConfig):
     image_cache: str = ""
     image_cache_encoder: str = ""
 
+@dataclass
+class GoatRawGoalSensorConfig(LabSensorConfig):
+    type: str = "GoatRawGoalSensor"
+    object_cache: str = ""
+    language_cache: str = ""
+    image_cache: str = ""
+    image_cache_encoder: str = ""
 
 ##########################################################################
 # Measurements
@@ -341,6 +348,13 @@ cs.store(
     group="habitat/task/lab_sensors",
     name="goat_goal_sensor",
     node=GoatGoalSensorConfig,
+)
+
+cs.store(
+    package=f"habitat.task.lab_sensors.goat_raw_goal_sensor",
+    group="habitat/task/lab_sensors",
+    name="goat_raw_goal_sensor",
+    node=GoatRawGoalSensorConfig,
 )
 
 # cs.store(

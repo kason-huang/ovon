@@ -18,6 +18,7 @@ defaults:
     - clip_objectgoal_sensor
     - step_id_sensor
     - goat_goal_sensor
+    - goat_raw_goal_sensor
     # - instance_imagegoal_sensor # for cache debug, we cannot use, because the dataset must be InstanceImageNavDatsetV1
   - _self_
 

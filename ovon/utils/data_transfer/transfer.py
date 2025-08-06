@@ -13,16 +13,11 @@ with open(goat_bench_data_path, 'r', encoding='utf-8') as f:
 with open(ovon_data_path, 'r+', encoding='utf-8') as f:
     target_data = json.load(f)
 
+
+# 添加image_goals内容
 source_goals = source_data['goals']
 target_goals = target_data['goals_by_category']
 
-# pirnt episodes.children_object_categories
-for episode in target_data['episodes']:
-    print(len(episode['children_object_categories']))
-
-exit(-1)
-
-# 遍历所有目标键
 for goal_key in source_goals:
     if goal_key in target_goals:
         source_list = source_goals[goal_key]
@@ -36,6 +31,7 @@ for goal_key in source_goals:
             if 'image_goals' in source_list[i]:
                 target_list[i]['image_goals'] = source_list[i]['image_goals']
 
+# 给episodes添加tasks字段，是一个数组，内容是1个，然后这个东西是从source的tasks字段获取的
 
 # 写入到新文件 merged.json
 with open(ovon_data_path_with_image, 'w', encoding='utf-8') as f:

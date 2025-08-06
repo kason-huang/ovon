@@ -203,6 +203,7 @@ class GoatDatasetV1(PointNavDatasetV1):
                 if goal_type == "object":
                     composite_episode.goals.append(dset_same_cat_goals[0])
                 else:
+                    # 这里理论上就一个instance的类型，所以其实不用列表，因为一定只有1的，除非goals_by_category里面的object_id出现重复
                     goal_inst = [
                         x
                         for x in dset_same_cat_goals[0]

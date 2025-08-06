@@ -300,7 +300,8 @@ class GoatRawGoalSensor(Sensor):
             }
         elif task_type == "image":
             img_idx = episode.tasks[task.active_subtask_idx][3]
-            img_goal  = episode.goals[task.active_subtask_idx]['image_goals'][img_idx]
+            # 这里的0表示的就是object_id对应的goal，所以其实应该就只有一个才对，后续可以把这个数组给去掉
+            img_goal  = episode.goals[task.active_subtask_idx][0]['image_goals'][img_idx]
             img_goal = InstanceImageParameters(**img_goal)
             self._current_image_goal = self._get_instance_image_goal(img_goal)
             return {
