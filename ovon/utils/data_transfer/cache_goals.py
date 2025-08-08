@@ -153,7 +153,7 @@ class CacheGoals:
         data_goal = {}
         env = self.config_env(scene)
         env.reset()
-        goals = env._dataset.goals
+        goals = env._dataset.goals_by_category
 
         print("Scene reset: {}".format(scene))
         os.makedirs(self.output_path, exist_ok=True)
@@ -198,7 +198,7 @@ class CacheGoals:
                     goals_meta.append(metadata)
 
 
-                scene_id = goal_k.split("_")[0]
+                scene_id = goal_k.split("_")[0].split(".")[0]
                 object_id = goal_val["object_id"]
                 data_goal[f"{scene_id}_{object_id}"] = goals_meta
 
@@ -241,7 +241,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--scene",
         type=str,
-        default="1S7LAXRdDqk",
+        default="1S7LAXRdDqK",
     )
     parser.add_argument(
         "--split",

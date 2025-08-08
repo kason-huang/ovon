@@ -18,13 +18,28 @@ from habitat.tasks.nav.instance_image_nav_task import (  # InstanceImageGoalNavE
     InstanceImageParameters,
 )
 from habitat.tasks.nav.object_nav_task import ObjectGoal, ObjectViewLocation
-
+from habitat.core.utils import not_none_validator
 
 from ovon.task.goat_task import GoatEpisode
 
 if TYPE_CHECKING:
     from omegaconf import DictConfig
 
+
+@attr.s(auto_attribs=True, kw_only=True)
+class GoatGoal(ObjectGoal):
+    """An instance image goal is an ObjectGoal that also contains a collection
+    of InstanceImageParameters.
+
+    Args:
+        image_goals: a list of camera parameters each used to generate an
+        image goal.
+    """
+
+    image_goals: List[InstanceImageParameters] = attr.ib(
+        default=None, validator=not_none_validator
+    )
+    object_surface_area: Optional[float] = None
 
 @registry.register_dataset(name="Goat-v1")
 class GoatDatasetV1(PointNavDatasetV1):
@@ -33,7 +48,7 @@ class GoatDatasetV1(PointNavDatasetV1):
     """
     episodes: List[GoatEpisode] = []  # type: ignore
     content_scenes_path: str = "{data_path}/content/{scene}.json.gz"
-    goals: Dict[str, Sequence[ObjectGoal]]
+    goals_by_category: Dict[str, Sequence[ObjectGoal]]
 
     def to_json(self) -> str:
         for i in range(len(self.episodes)):
@@ -42,7 +57,7 @@ class GoatDatasetV1(PointNavDatasetV1):
         result = DatasetFloatJSONEncoder().encode(self)
 
         for i in range(len(self.episodes)):
-            goals = self.goals[self.episodes[i].goals_key]
+            goals = self.goals_by_category[self.episodes[i].goals_key]
             if not isinstance(goals, list):
                 goals = list(goals)
             self.episodes[i].goals = goals
@@ -50,7 +65,7 @@ class GoatDatasetV1(PointNavDatasetV1):
         return result
 
     def __init__(self, config: Optional["DictConfig"] = None) -> None:
-        self.goals = {}
+        self.goals_by_category = {}
         super().__init__(config)
         self.episodes = list(self.episodes)
 
@@ -100,10 +115,10 @@ class GoatDatasetV1(PointNavDatasetV1):
         return g
     
     @staticmethod
-    def _deserialize_goal(
+    def __deserialize_goal(
         serialized_goal: Dict[str, Any]
-    ) -> InstanceImageGoal:
-        g = InstanceImageGoal(**serialized_goal)
+    ) -> GoatGoal:
+        g = GoatGoal(**serialized_goal)
 
         for vidx, view in enumerate(g.view_points):
             view_location = ObjectViewLocation(**view)  # type: ignore[arg-type]
@@ -125,7 +140,9 @@ class GoatDatasetV1(PointNavDatasetV1):
         if len(deserialized["episodes"]) == 0:
             return
 
-        self.goals = deserialized["goals_by_category"]
+        for k, v in deserialized["goals_by_category"].items():
+            self.goals_by_category[k] = [self.__deserialize_goal(g) for g in v]
+
         num_filtered_eps = 0
 
         for i, composite_episode in enumerate(deserialized["episodes"]):
@@ -156,22 +173,11 @@ class GoatDatasetV1(PointNavDatasetV1):
 
                 dset_same_cat_goals = [
                     x
-                    for x in self.goals.values()
-                    if x[0]["object_category"] == goal_category
+                    for x in self.goals_by_category.values()
+                    if x[0].object_category == goal_category
                 ]
 
-                if goal_type == "description":
-                    goal_inst = [
-                        x
-                        for x in dset_same_cat_goals[0]
-                        if x["object_id"] == goal_inst_id
-                    ]
-                    if len(goal_inst[0]["lang_desc"].split(" ")) <= 55:
-                        filtered_tasks.append(goal)
-                    else:
-                        num_filtered_eps += 1
-                else:
-                    filtered_tasks.append(goal)
+                filtered_tasks.append(goal)
 
             for goal in filtered_tasks:
                 goal_type = goal[1]
@@ -180,8 +186,8 @@ class GoatDatasetV1(PointNavDatasetV1):
 
                 dset_same_cat_goals = [
                     x
-                    for x in self.goals.values()
-                    if x[0]["object_category"] == goal_category
+                    for x in self.goals_by_category.values()
+                    if x[0].object_category == goal_category
                 ]
                 # 先注释这个字段的处理，目前没有看到有什么用，或者就直接拷贝过去也就可以了
                 # children_categories = dset_same_cat_goals[0][0][
@@ -207,7 +213,7 @@ class GoatDatasetV1(PointNavDatasetV1):
                     goal_inst = [
                         x
                         for x in dset_same_cat_goals[0]
-                        if x["object_id"] == goal_inst_id
+                        if x.object_id == goal_inst_id
                     ]
                     composite_episode.goals.append(goal_inst)
                 

@@ -4,8 +4,6 @@ defaults:
   - /habitat: habitat_config_base
   - /habitat/simulator/agents@habitat.simulator.agents.main_agent: rgb_agent
   - /habitat/task: task_config_base
-  # - /habitat/task/measurements:
-  #   - frontier_exploration_map
   - /habitat/task/actions:
     - stop
     - move_forward
@@ -22,10 +20,6 @@ defaults:
     # - instance_imagegoal_sensor # for cache debug, we cannot use, because the dataset must be InstanceImageNavDatsetV1
   - _self_
 
-# habitat:
-#   # env_task: GymGoatEnv
-#   environment:
-#     max_episode_steps: 5000
 habitat:
   environment:
     iterator_options:
@@ -35,13 +29,6 @@ habitat:
     success_reward: 2.5
     slack_reward: -1e-3
     lab_sensors:
-      # objnav_explorer:
-      #   map_resolution: 128
-      #   beeline_dist_thresh: 3.5
-      #   visibility_dist: 3.0
-      #   area_thresh: 1.5
-      #   success_distance: 0.25
-      #   fov: 42
       clip_objectgoal_sensor:
         cache: data/text_embeddings/siglip.pkl
     # measurements:

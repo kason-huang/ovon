@@ -27,6 +27,13 @@ class GoatEpisode(NavigationEpisode):
     # todo maybe we do not need this
     children_object_categories: Optional[List[str]] = []
 
+    # 目前只有task，所以就先用这个兼容OVON的东西
+    @property
+    def goals_key(self) -> str:
+        r"""The key to retrieve the goals"""
+        #return f"{os.path.basename(self.scene_id)}_{self.object_category}"
+        return f"{os.path.basename(self.scene_id)}_{self.object_category}"
+
     @property
     def goals_keys(self) -> Dict:
         r"""Dictionary of goals types and corresonding keys"""

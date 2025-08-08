@@ -16,7 +16,7 @@ from ovon.models.encoders.cma_xattn import CrossModalAttention
 from ovon.models.encoders.cross_attention import CrossAttention
 from ovon.models.encoders.make_encoder import make_encoder
 from ovon.task.sensors import ClipObjectGoalSensor
-from ovon.task.goat_sensors import GoatGoalSensor
+from ovon.task.goat_sensors import GoatGoalSensor, GoatModalTypeSensor
 
 if TYPE_CHECKING:
     from omegaconf import DictConfig
@@ -389,7 +389,8 @@ class OVONNet(Net):
         else:
             raise NotImplementedError(f"Unknown fusion type: {fusion_type}")
 
-        assert ClipObjectGoalSensor.cls_uuid in observation_space.spaces
+        #assert ClipObjectGoalSensor.cls_uuid in observation_space.spaces
+        assert ClipObjectGoalSensor.cls_uuid in observation_space.spaces or GoatGoalSensor.cls_uuid in observation_space.spaces
         if not self._fusion_type.late_fusion and not self._fusion_type.xattn:
             rnn_input_size_info["clip_goal"] = clip_embedding_size
 
@@ -442,7 +443,7 @@ class OVONNet(Net):
             num_layers=self._num_recurrent_layers,
         )
     
-    def forward_new(
+    def forward(
         self,
         observations: Dict[str, torch.Tensor],
         rnn_hidden_states,
@@ -464,8 +465,8 @@ class OVONNet(Net):
 
         visual_feats = self.visual_fc(visual_feats)
         # object_goal = observations[ClipObjectGoalSensor.cls_uuid]
-        goat_goal = observations[GoatGoalSensor.cls_uuid]
-        goal = goat_goal['value']
+        goal = observations[GoatGoalSensor.cls_uuid]
+        modal_type = observations[GoatModalTypeSensor.cls_uuid]
 
         if self._fusion_type.xattn:
             visual_feats = self.cross_attention(goal, visual_feats)
@@ -515,7 +516,7 @@ class OVONNet(Net):
         return out, rnn_hidden_states, aux_loss_state
 
 
-    def forward(
+    def forward_old(
         self,
         observations: Dict[str, torch.Tensor],
         rnn_hidden_states,
