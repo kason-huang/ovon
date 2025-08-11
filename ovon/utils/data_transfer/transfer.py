@@ -62,4 +62,6 @@ def fill_image_goals_field():
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(target_data, f, indent=4)
 
+
+
 fill_image_goals_field()

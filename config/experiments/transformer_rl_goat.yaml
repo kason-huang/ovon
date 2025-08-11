@@ -56,7 +56,7 @@ habitat:
   dataset:
     type: "Goat-v1"
     split: train
-    data_path: data/datasets/ovon/hm3d/v2/{split}/{split}.json.gz
+    data_path: data/datasets/ovon/hm3d/v2_new/{split}/{split}.json.gz
   simulator:
     type: "OVONSim-v0"
     turn_angle: 30

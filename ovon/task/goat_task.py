@@ -93,6 +93,7 @@ class GoatTask(NavigationTask):  # TODO
         self.active_subtask_idx = 0 #当前就只会是0，不会往前走
         self.last_action = None
 
+    #def reset(self, *args: Any, **kwargs: Any) -> None:
     def reset(self, *args: Any, **kwargs: Any) -> None:
         self.is_sub_task_stop_called = False
         self.active_subtask_idx = 0
