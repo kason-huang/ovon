@@ -78,6 +78,11 @@ class GoatModalTypeSensorConfig(LabSensorConfig):
 
 
 @dataclass
+class GoatEpisodeIdSensorConfig(LabSensorConfig):
+    type: str = "GoatEpisodeIdSensor"
+
+
+@dataclass
 class GoatGoalSensorConfig(LabSensorConfig):
     type: str = "GoatGoalSensor"
     object_cache: str = ""
@@ -365,6 +370,16 @@ cs.store(
     name="goat_modal_type_sensor",
     node=GoatModalTypeSensorConfig,
 )
+
+
+cs.store(
+    package=f"habitat.task.lab_sensors.goat_episode_id_sensor",
+    group="habitat/task/lab_sensors",
+    name="goat_episode_id_sensor",
+    node=GoatEpisodeIdSensorConfig,
+)
+
+
 
 # cs.store(
 #     group="habitat_baselines",

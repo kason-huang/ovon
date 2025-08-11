@@ -15,8 +15,10 @@ from torch import nn as nn
 from ovon.models.encoders.cma_xattn import CrossModalAttention
 from ovon.models.encoders.cross_attention import CrossAttention
 from ovon.models.encoders.make_encoder import make_encoder
-from ovon.task.sensors import ClipObjectGoalSensor
+from ovon.task.sensors import ClipObjectGoalSensor, StepIDSensor
 from ovon.task.goat_sensors import GoatGoalSensor, GoatModalTypeSensor
+
+from PIL import Image
 
 if TYPE_CHECKING:
     from omegaconf import DictConfig
@@ -462,11 +464,30 @@ class OVONNet(Net):
             ]
         else:
             visual_feats = self.visual_encoder(observations)
+        
+
 
         visual_feats = self.visual_fc(visual_feats)
         # object_goal = observations[ClipObjectGoalSensor.cls_uuid]
         goal = observations[GoatGoalSensor.cls_uuid]
-        modal_type = observations[GoatModalTypeSensor.cls_uuid]
+        # modal_type = observations[GoatModalTypeSensor.cls_uuid]
+        # step_id = observations[StepIDSensor.cls_uuid]
+
+        # length = step_id.shape
+        # if self.training is True:
+        # #if list(step_id.shape) != [50, 1] or list(step_id.shape) != [60, 1]:
+        #     # print(f"modal type {modal_type}")
+        #     # save_path=f"./debug/img/tmp_{step_id}.png"
+        #     # tensor_1 = observations["rgb"]
+        #     # tensor_1 = tensor_1.squeeze(0)
+        #     # tensor_1 = tensor_1.cpu()
+        #     # img_np = tensor_1.numpy()
+        #     # image = Image.fromarray(img_np)
+        #     # image.save(save_path)
+        #     print(f"training: {step_id.shape}")
+        # else:
+        #     print(f"no training : {step_id.shape}")
+        #     print(step_id)
 
         if self._fusion_type.xattn:
             visual_feats = self.cross_attention(goal, visual_feats)

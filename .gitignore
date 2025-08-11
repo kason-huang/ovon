@@ -27,3 +27,5 @@ CLIP
 
 *.pth
 tmp/
+
+debug/img

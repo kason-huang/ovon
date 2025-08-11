@@ -135,6 +135,30 @@ class GoatModalTypeSensor(Sensor):
         return self.mapping[task_type]
 
 @registry.register_sensor
+class GoatEpisodeIdSensor(Sensor):
+    cls_uuid: str = "goat_episode_id"
+
+    def _get_observation_space(self, *args, **kwargs):
+        return spaces.Discrete(1)
+
+    def _get_uuid(self, *args: Any, **kwargs: Any) -> str:
+        return self.cls_uuid
+    
+    def _get_sensor_type(self, *args: Any, **kwargs: Any):
+        return SensorTypes.TENSOR
+    
+    def get_observation(
+        self,
+        observations,
+        *args: Any,
+        episode: Any,
+        task: Any,
+        **kwargs: Any,
+    ) -> np.ndarray:
+        return episode.episode_id
+
+
+@registry.register_sensor
 class GoatRawGoalSensor(Sensor):
     r"""A sensor for Goat goals"""
 
