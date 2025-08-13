@@ -40,6 +40,9 @@ class GoatGoal(ObjectGoal):
         default=None, validator=not_none_validator
     )
     object_surface_area: Optional[float] = None
+    children_object_categories: Optional[List[str]] = []
+    lang_desc: Optional[str] = None
+
 
 @registry.register_dataset(name="Goat-v1")
 class GoatDatasetV1(PointNavDatasetV1):
@@ -139,7 +142,7 @@ class GoatDatasetV1(PointNavDatasetV1):
 
         if len(deserialized["episodes"]) == 0:
             return
-
+        
         for k, v in deserialized["goals_by_category"].items():
             self.goals_by_category[k] = [self.__deserialize_goal(g) for g in v]
 
@@ -165,54 +168,36 @@ class GoatDatasetV1(PointNavDatasetV1):
 
             composite_episode.goals = []
 
-            filtered_tasks = []
-            for goal in composite_episode.tasks:
+            for idx, goal in enumerate(composite_episode.tasks):
                 goal_type = goal[1]
                 goal_category = goal[0]
                 goal_inst_id = goal[2]
 
-                dset_same_cat_goals = [
-                    x
-                    for x in self.goals_by_category.values()
-                    if x[0].object_category == goal_category
-                ]
+                # goals_by_category里面累积了所有scene的东西
+                dset_same_cat_goals = self.goals_by_category[composite_episode.goals_key_by_idx(idx)]
+                # 处理子类型
+                if len(dset_same_cat_goals) == 0:
+                    print(f"goals_key not exist {composite_episode.goals_key_by_idx(idx)}")
+                    exit(-1)
 
-                filtered_tasks.append(goal)
+                children_categories = dset_same_cat_goals[0].children_object_categories
 
-            for goal in filtered_tasks:
-                goal_type = goal[1]
-                goal_category = goal[0]
-                goal_inst_id = goal[2]
-
-                dset_same_cat_goals = [
-                    x
-                    for x in self.goals_by_category.values()
-                    if x[0].object_category == goal_category
-                ]
-                # 先注释这个字段的处理，目前没有看到有什么用，或者就直接拷贝过去也就可以了
-                # children_categories = dset_same_cat_goals[0][0][
-                #     "children_object_categories"
-                # ]
-                # for child_category in children_categories:
-                #     goal_key = "{}_{}".format(
-                #         composite_episode.scene_id.split("/")[-1],
-                #         child_category,
-                #     )
-                #     if goal_key not in self.goals:
-                #         continue
-                #     dset_same_cat_goals[0].extend(self.goals[goal_key])
-
-                assert (
-                    len(dset_same_cat_goals) == 1
-                ), f"more than 1 goal categories for {goal_category}"
+                for child_category in children_categories:
+                    goal_key = "{}_{}".format(
+                        composite_episode.scene_id.split("/")[-1],
+                        child_category,
+                    )
+                    if goal_key not in self.goals_by_category:
+                        continue
+                    dset_same_cat_goals.extend(self.goals_by_category[goal_key])
 
                 if goal_type == "object":
-                    composite_episode.goals.append(dset_same_cat_goals[0])
+                    composite_episode.goals.append(dset_same_cat_goals)
                 else:
-                    # 这里理论上就一个instance的类型，所以其实不用列表，因为一定只有1的，除非goals_by_category里面的object_id出现重复
+                    # 这里用列表是是为与object对齐，object里面的也是一个列表
                     goal_inst = [
                         x
-                        for x in dset_same_cat_goals[0]
+                        for x in dset_same_cat_goals
                         if x.object_id == goal_inst_id
                     ]
                     composite_episode.goals.append(goal_inst)

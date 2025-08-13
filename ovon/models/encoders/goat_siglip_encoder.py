@@ -48,6 +48,36 @@ class GoatSigLIPEncoder(nn.Module):
 
         # features = features / features.norm(dim=-1, keepdim=True)
         return features
+    
+
+    def batch_encode_images(
+        self,
+        images,                # List[np.ndarray | PIL.Image | torch.Tensor]
+        batch_size: int = 128,
+        return_numpy: bool = True,
+    ):
+        if not images:
+            return np.empty((0, 0), dtype=np.float32) if return_numpy else torch.empty(0, 0)
+
+        preprocess = self.preprocess_val
+        if self.model.training:
+            preprocess = self.preprocess_train
+
+        all_feats = []
+        with torch.inference_mode():
+            for s in range(0, len(images), batch_size):
+                batch_imgs = images[s:s+batch_size]
+                prepped = []
+                for img in batch_imgs:
+                    if isinstance(img, np.ndarray):
+                        img = Image.fromarray(img.astype(np.uint8)) 
+                    t = preprocess(img)          # -> CHW
+                    prepped.append(t)
+                x = torch.stack(prepped, dim=0).to(self.device, non_blocking=True)  # [B,C,H,W]
+                feats = self.model.encode_image(x)                                   # [B,D]
+                all_feats.append(feats.detach().cpu())
+        feats_all = torch.cat(all_feats, dim=0)  # [N,D]
+        return feats_all.numpy() if return_numpy else feats_all
 
 
 

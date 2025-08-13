@@ -23,37 +23,42 @@ class GoatEpisode(NavigationEpisode):
     :param object_category: Category of the obect
     """
     object_category: Optional[str] = None
-    tasks: List[NavigationEpisode] = []
+    tasks: List[List] = []
+    active_subtask_idx: int = 0 #目前只会是0，后续通过GoatTask的Step做更新
     # todo maybe we do not need this
     children_object_categories: Optional[List[str]] = []
 
     # 目前只有task，所以就先用这个兼容OVON的东西
     @property
     def goals_key(self) -> str:
-        r"""The key to retrieve the goals"""
+        r"""The key to retrieve the goals of active_subtask_idx"""
         #return f"{os.path.basename(self.scene_id)}_{self.object_category}"
-        return f"{os.path.basename(self.scene_id)}_{self.object_category}"
 
-    @property
-    def goals_keys(self) -> Dict:
-        r"""Dictionary of goals types and corresonding keys"""
-        goals_keys = {ep["task_type"]: [] for ep in self.tasks}
+        return f"{os.path.basename(self.scene_id)}_{self.tasks[self.active_subtask_idx][0]}"
+    
+    def goals_key_by_idx(self, idx) -> str:
+        return f"{os.path.basename(self.scene_id)}_{self.tasks[idx][0]}"
 
-        for ep in self.tasks:
-            if ep["task_type"] == "objectnav":
-                goal_key = (
-                    f"{os.path.basename(self.scene_id)}_{ep['object_category']}"
-                )
+    # @property
+    # def goals_keys(self) -> Dict:
+    #     r"""Dictionary of goals types and corresonding keys"""
+    #     goals_keys = {ep["task_type"]: [] for ep in self.tasks}
 
-            elif ep["task_type"] in ["imagenav", "languagenav"]:
-                sid = os.path.basename(self.scene_id)
-                for x in [".glb", ".basis"]:
-                    sid = sid[: -len(x)] if sid.endswith(x) else sid
-                goal_key = f"{sid}_{ep['goal_object_id']}"
+    #     for ep in self.tasks:
+    #         if ep["task_type"] == "objectnav":
+    #             goal_key = (
+    #                 f"{os.path.basename(self.scene_id)}_{ep['object_category']}"
+    #             )
 
-            goals_keys[ep["task_type"]].append(goal_key)
+    #         elif ep["task_type"] in ["imagenav", "languagenav"]:
+    #             sid = os.path.basename(self.scene_id)
+    #             for x in [".glb", ".basis"]:
+    #                 sid = sid[: -len(x)] if sid.endswith(x) else sid
+    #             goal_key = f"{sid}_{ep['goal_object_id']}"
 
-        return goals_keys
+    #         goals_keys[ep["task_type"]].append(goal_key)
+
+    #     return goals_keys
 
     def goals_keys_with_sequence(self) -> str:
         r"""The key to retrieve the goals"""

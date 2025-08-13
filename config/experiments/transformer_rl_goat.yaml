@@ -43,7 +43,7 @@ habitat:
     end_on_success: True
     lab_sensors:
       goat_goal_sensor:
-        object_cache: tmp/ovon/category_name_siglip_embeddings.pkl
+        object_cache: tmp/ovon/category_name_siglip_embedding.pkl
         image_cache: tmp/iin/train_embeddings/
         image_cache_encoder: siglip
 
@@ -84,14 +84,16 @@ habitat_baselines:
   tensorboard_dir: "tb"
   video_dir: "video_dir"
   test_episode_count: -1
-  eval_ckpt_path_dir: "data/new_checkpoints"
+  eval_ckpt_path_dir: "data/new_checkpoints_goat"
   num_environments: 8
-  checkpoint_folder: "data/new_checkpoints"
+  checkpoint_folder: "data/new_checkpoints_goat"
   trainer_name: "ver_transformer"
   num_updates: -1
   total_num_steps: 150000000
   log_interval: 10
-  num_checkpoints: 50
+  # num_checkpoints: 50
+  num_checkpoints: -1
+  checkpoint_interval: 20
   # Force PyTorch to be single threaded as
   # this improves performance considerably
   force_torch_single_threaded: True

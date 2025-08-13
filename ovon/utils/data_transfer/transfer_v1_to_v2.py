@@ -42,8 +42,17 @@ def process_one_file(in_path: str, out_path: str) -> int:
 
     new_data = {
         "episodes": new_episodes,
-        "goals": data.get("goals", {})
+        "goals_by_category": data.get("goals", {})
     }
+
+    # image_goals是必选字段，没有的话需要设置为空
+    target_goals = new_data['goals_by_category']
+
+    for goal_key in target_goals:
+            target_list = target_goals[goal_key]
+            for i in range(len(target_list)):
+                if 'image_goals' not in target_list[i]:
+                    target_list[i]['image_goals'] = []
 
     with gzip.open(out_path, "wt", encoding="utf-8") as f:
         json.dump(new_data, f, ensure_ascii=False)

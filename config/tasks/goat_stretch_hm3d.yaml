@@ -13,9 +13,9 @@ defaults:
     - look_down
   - /habitat/task/lab_sensors:
     # - objnav_explorer
-    - clip_objectgoal_sensor
+    # - clip_objectgoal_sensor
     - step_id_sensor
-    - goat_goal_sensor
+    # - goat_goal_sensor
     - goat_raw_goal_sensor
     # - instance_imagegoal_sensor # for cache debug, we cannot use, because the dataset must be InstanceImageNavDatsetV1
   - _self_
@@ -28,9 +28,9 @@ habitat:
     type: Goat-v1
     success_reward: 2.5
     slack_reward: -1e-3
-    lab_sensors:
-      clip_objectgoal_sensor:
-        cache: data/text_embeddings/siglip.pkl
+    # lab_sensors:
+    #   clip_objectgoal_sensor:
+    #     cache: data/text_embeddings/siglip.pkl
     # measurements:
     #   success:
     #     success_distance: 0.25
@@ -39,7 +39,8 @@ habitat:
   dataset:
     type: "Goat-v1"
     split: train
-    data_path: data/datasets/ovon/hm3d/v2/{split}/{split}.json.gz
+    #data_path: data/datasets/ovon/hm3d/v2_new_small/{split}/{split}.json.gz
+    data_path: data/datasets/ovon/hm3d/v2_new/{split}/{split}.json.gz
   simulator:
     type: "OVONSim-v0"
     navmesh_settings:

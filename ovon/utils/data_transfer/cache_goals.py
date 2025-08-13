@@ -2,7 +2,9 @@ import argparse
 import glob
 import json
 import os
+import time
 import random
+from pathlib import Path
 
 import habitat
 import numpy as np
@@ -15,6 +17,7 @@ from ovon.models.encoders.goat_siglip_encoder import GoatSigLIPEncoder
 from open_clip import create_model_from_pretrained, get_tokenizer
 from ovon.utils.utils import save_image, save_pickle, load_pickle, load_dataset
 from tqdm import tqdm
+from contextlib import contextmanager
 
 def load_categories_from_dataset(path):
     if not os.path.exists(path):
@@ -39,12 +42,14 @@ class CacheGoals:
         output_path: str = "",
         encoder: str = "siglip",
         add_noise: bool = False,
+        skip_if_exists: bool = True,
     ) -> None:
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         self.config_path = config_path
         self.dataset_path = dataset_path
         self.output_path = output_path
+        self.skip_if_exists = skip_if_exists
         self.split = split
         self.encoder_name = encoder
         self.add_noise = add_noise
@@ -68,6 +73,18 @@ class CacheGoals:
         # else:
             # raise NotImplementedError
         pass
+
+    @contextmanager
+    def _safe_env(self, scene):
+        env = self.config_env(scene)
+        try:
+            env.reset()
+            yield env
+        finally:
+            try:
+                env.close()
+            except Exception:
+                pass
 
     def apply_noise(self, image):
         mean = 0
@@ -131,65 +148,81 @@ class CacheGoals:
         text_embedding = self.encoder.encode_text(goal_categories)
         print(text_embedding.shape)
 
-        output_path = f"./tmp/category_name_{self.encoder_name}_embedding.pkl"
+        output_path = f"./tmp/ovon/category_name_{self.encoder_name}_embedding.pkl"
         output = {}
         for goal_category, embedding in zip(goal_categories, text_embedding):
             output[goal_category] = embedding.detach().cpu().numpy()
         save_pickle(output, output_path)
 
 
-    def run_cache_image_goals(self, scene):
-        from habitat.tasks.nav.instance_image_nav_task import InstanceImageParameters
-        # if os.path.exists(
-        #     os.path.join(
-        #         self.output_path,
-        #         f"{scene}_{self.encoder_name}_goat_embedding.pkl",
-        #     )
-        # ):
-        #     print("Scene already cached: {}".format(scene))
-        #     return
 
-        data = {}
+    def run_cache_image_goals(self, scene):
+        # --- 计时：总时长 ---
+        t_total_start = time.perf_counter()
+
+        from habitat.tasks.nav.instance_image_nav_task import InstanceImageParameters
+        if self.skip_if_exists and os.path.exists(
+            os.path.join(self.output_path, f"{scene}_{self.encoder_name}_embedding.pkl")
+        ):
+            print("Scene already cached: {}".format(scene))
+            return
+        
+        t_env_start = time.perf_counter()
         data_goal = {}
         env = self.config_env(scene)
         env.reset()
         goals = env._dataset.goals_by_category
+        t_env = time.perf_counter() - t_env_start
 
         print("Scene reset: {}".format(scene))
         os.makedirs(self.output_path, exist_ok=True)
 
         print("Add noise: {}".format(self.add_noise))
 
+        n_images = 0
+        t_noise = 0.0
+        t_sensor = 0.0
+        t_encode = 0.0
+        t_debug = 0.0   # 你用于 text 相似度的调试耗时
+        t_save = 0.0
+
         for goal_k, goal_vals in goals.items():
             for goal_val in goal_vals:
                 goals_meta = []
-                if "image_goals" not in goal_val or not goal_val["image_goals"]:
+                if len(goal_val.image_goals) == 0:
                     continue
-                for goal_idx, img_goal in enumerate(goal_val["image_goals"]):
-                    img_goal = InstanceImageParameters(**img_goal) ## TODO 后续需要依据原本的instace_imagegoal的代码去重构下goat-bench这里的东西，instance_imagegoal都封装为对象了，而这里是字典
+                for goal_idx, img_goal in enumerate(goal_val.image_goals):
+                    t_sensor_start = time.perf_counter()
                     img = env.task.sensor_suite.sensors[
                         #"instance_imagegoal"
                         "goat_subtask_raw_goal"
                     ]._get_instance_image_goal(img_goal)
+                    t_sensor += time.perf_counter() - t_sensor_start
 
                     if self.add_noise:
                         img = self.apply_noise(img)
 
+                    t1 = time.perf_counter()
                     img_embedding = self.encoder.encode_image(img)
-                    # --- for debug -------
-                    text = [f"a photo of {goal_val['object_category']}", "a photo of dog"]
-                    text_embedding = self.encoder.encode_text(text)
+                    t_encode += time.perf_counter() - t1
+                    n_images += 1
 
-                    image_features = img_embedding / img_embedding.norm(dim=-1, keepdim=True)
-                    text_features = text_embedding / text_embedding.norm(dim=-1, keepdim=True)
-                    similarity = (image_features @ text_features.T).squeeze(0)  # shape: (num_texts,)
-                    print(f"category {goal_val['object_category']} similarity: {similarity}")
-                    # ----- for debug end
+                    # # --- for debug -------
+                    # t2 = time.perf_counter()
+                    # text = [f"a photo of {goal_val.object_category}", "a photo of dog"]
+                    # text_embedding = self.encoder.encode_text(text)
+
+                    # image_features = img_embedding / img_embedding.norm(dim=-1, keepdim=True)
+                    # text_features = text_embedding / text_embedding.norm(dim=-1, keepdim=True)
+                    # similarity = (image_features @ text_features.T).squeeze(0)  # shape: (num_texts,)
+                    # print(f"category {goal_val.object_category} similarity: {similarity}")
+                    # t_debug += time.perf_counter() - t2
+                    # # ----- for debug end
 
                     img_embedding =  img_embedding.squeeze().detach().cpu().numpy()
                     metadata = dict(
                         hfov=img_goal.hfov,
-                        object_id=goal_val["object_id"],
+                        object_id=goal_val.object_id,
                         position=img_goal.position,
                         rotation=img_goal.rotation,
                         goal_id=goal_idx,
@@ -198,14 +231,29 @@ class CacheGoals:
                     goals_meta.append(metadata)
 
 
-                scene_id = goal_k.split("_")[0].split(".")[0]
-                object_id = goal_val["object_id"]
+                # scene_id = goal_k.split("_")[0].split(".")[0]
+                scene_id = goal_k.split("_")[0]
+                object_id = goal_val.object_id
                 data_goal[f"{scene_id}_{object_id}"] = goals_meta
 
         out_path = os.path.join(
             self.output_path, f"{scene}_{self.encoder_name}_embedding.pkl"
         )
+        t_save_start = time.perf_counter()
         save_pickle(data_goal, out_path)
+        t_save = time.perf_counter() - t_save_start
+
+        t_total = time.perf_counter() - t_total_start
+        t_other = t_total - (t_env + t_noise + t_encode + t_debug + t_save)
+        ips = (n_images / t_encode) if t_encode > 0 else 0.0
+
+        print(
+            "[timing] "
+            f"scene={scene} | total={t_total:.3f}s | env={t_env:.3f}s | "
+            f"noise={t_noise:.3f}s | encode={t_encode:.3f}s "
+            f"(imgs={n_images}, {ips:.2f} img/s) | "
+            f"debug={t_debug:.3f}s | save={t_save:.3f}s | other={t_other:.3f}s"
+        )
 
         # out_path = os.path.join(
         #     self.output_path, f"{scene}_{self.encoder_name}_goat_embedding.pkl"
@@ -220,6 +268,150 @@ class CacheGoals:
         print(len(data))
 
 
+    def run_all_scene_cache_image_goals(self):
+
+        # 这里要同步去修改配置文件里面的路径
+        # 获取split的值
+        split = "train"
+        # 凭借split的路径
+        data_path = "./data/datasets/ovon/hm3d/v2_new"
+        # data_path = "./data/datasets/ovon/hm3d/v2_new"
+        train_dataset_path = f"{data_path}/{split}/content"
+
+        # 获取split的scene列表
+        suffix = ".json.gz"
+        scenes = sorted(
+            p.name[:-len(suffix)]
+            for p in Path(train_dataset_path).glob("*.json.gz")
+            if p.is_file()
+        )
+
+        # 一步步调用run_cache_image_goals
+        for scene in scenes:
+            self.output_path = "./tmp/iin/train_embeddings"
+            #self.run_cache_image_goals(scene=scene)
+            self.run_cache_image_goals_with_concurrent(scene=scene, batch_size=256)
+    
+
+    # 并发 + 每个scene的image goal的统计
+    def run_cache_image_goals_with_concurrent(self, scene, batch_size):
+        t_total_start = time.perf_counter()
+
+        out_path = os.path.join(
+            self.output_path, f"{scene}_{self.encoder_name}_embedding.pkl"
+        )
+        if self.skip_if_exists and os.path.exists(out_path):
+            print(f"[skip] {out_path} already exists")
+            return out_path
+
+        data_goal = {}
+        t_env_start = time.perf_counter()
+        with self._safe_env(scene) as env:
+            t_env = time.perf_counter() - t_env_start
+
+            goals = env._dataset.goals_by_category
+            sensor = env.task.sensor_suite.sensors.get(
+                "goat_subtask_raw_goal")
+            if sensor is None:
+                raise RuntimeError("Cannot find goal image sensor.")
+
+            n_images = 0
+            t_noise = 0.0
+            t_encode = 0.0
+            t_sensor = 0.0   # 你用于 text 相似度的调试耗时
+            t_save = 0.0
+
+            buf_imgs, buf_meta = [], []
+
+            def flush():
+                if not buf_imgs:
+                    return
+                emb = self.encoder.batch_encode_images(buf_imgs,batch_size=batch_size) 
+                for e, m in zip(emb, buf_meta):
+                    md = dict(
+                        hfov=m["hfov"],
+                        object_id=m["object_id"],
+                        position=m["position"],
+                        rotation=m["rotation"],
+                        goal_id=m["goal_id"],
+                        embedding=e,
+                    )
+                    # text = [f"a photo of f{m['object_category']}", "a photo of dog"]
+                    # text_embedding = self.encoder.encode_text(text)
+                    # t = torch.from_numpy(e)
+                    # t = t.unsqueeze(0).to(self.device)
+                    # t = t / t.norm(dim=-1, keepdim=True)
+                    # text_features = text_embedding / text_embedding.norm(dim=-1, keepdim=True)
+                    # similarity = (t @ text_features.T).squeeze(0)  # shape: (num_texts,)
+                    # print(f"category {m['object_category']} similarity: {similarity}")
+                
+                    data_goal.setdefault(m["key"], []).append(md)
+                buf_imgs.clear()
+                buf_meta.clear()
+
+            for goal_k, goal_vals in goals.items():
+                scene_id = goal_k.split("_")[0]
+                for goal_val in goal_vals:
+                    if not getattr(goal_val, "image_goals", None):
+                        continue
+
+                    object_id = goal_val.object_id
+                    key = f"{scene_id}_{object_id}"
+
+                    t_sensor_start = time.perf_counter()
+                    n_images += len(goal_val.image_goals)
+                    for goal_idx, img_goal in enumerate(goal_val.image_goals):
+                        img = sensor._get_instance_image_goal(img_goal)
+
+                        if self.add_noise:
+                            img = self.apply_noise(img)
+
+                        buf_imgs.append(img)
+                        buf_meta.append(dict(
+                            key=key,
+                            hfov=img_goal.hfov,
+                            object_id=object_id,
+                            position=img_goal.position,
+                            rotation=img_goal.rotation,
+                            goal_id=goal_idx,
+                            object_category=goal_val.object_category
+                        ))
+
+                        if len(buf_imgs) >= batch_size:
+                            t_sensor += time.perf_counter() - t_sensor_start
+                            t_encode_start = time.perf_counter()
+                            flush()
+                            t_encode += time.perf_counter() - t_encode_start
+                            t_sensor_start = time.perf_counter()
+
+
+            t_encode_start = time.perf_counter()
+            flush()
+            t_encode += time.perf_counter() - t_encode_start
+        t_save_start = time.perf_counter() 
+        save_pickle(data_goal, out_path)        
+        t_save += time.perf_counter() - t_save_start
+
+        t_total = time.perf_counter() - t_total_start
+        t_other = t_total - (t_env + t_noise + t_encode + t_save + t_sensor)
+        ips = (n_images / t_encode) if t_encode > 0 else 0.0
+
+        msg = (
+            "[timing] "
+            f"scene={scene} | total={t_total:.3f}s | env={t_env:.3f}s | "
+            f"noise={t_noise:.3f}s | encode={t_encode:.3f}s "
+            f"(imgs={n_images}, {ips:.2f} img/s) | "
+            f"save={t_save:.3f}s | other={t_other:.3f}s | "
+            f"sensor={t_sensor:.3f}s | batch_size={batch_size}"
+        )
+        print(msg)
+        with open("./tmp/monitor.txt", "a", encoding="utf-8") as f:
+            f.write(msg + "\n")  # 文件追加写入
+
+
+
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -231,7 +423,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--dataset-path",
         type=str,
-        default="./data/datasets/ovon/hm3d/v2",
+        default="./data/datasets/ovon/hm3d/v2_new",
     )
     parser.add_argument(
         "--output-path",
@@ -241,7 +433,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--scene",
         type=str,
-        default="1S7LAXRdDqK",
+        # default="1S7LAXRdDqK",
+        default="*",
     )
     parser.add_argument(
         "--split",
@@ -270,4 +463,5 @@ if __name__ == "__main__":
     )
     # cache.run(args.scene)
     # cache.load(args.scene)
-    cache.run_cache_object_goals()
+    # cache.run_cache_object_goals()
+    cache.run_all_scene_cache_image_goals()

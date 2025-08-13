@@ -92,7 +92,7 @@ class GoatGoalSensor(Sensor):
 
             instance_id = episode.tasks[task.active_subtask_idx][2]
             img_idx = episode.tasks[task.active_subtask_idx][3]
-            #scene_id = episode.scene_id.split("/")[-1].split(".")[0]
+            # scene_glb = episode.scene_id.split("/")[-1].split(".")[0]
             scene_glb = episode.scene_id.split("/")[-1]
             
             uuid = "{}_{}".format(scene_glb, instance_id)
@@ -280,8 +280,7 @@ class GoatRawGoalSensor(Sensor):
         elif task_type == "image":
             img_idx = episode.tasks[task.active_subtask_idx][3]
             # 这里的0表示的就是object_id对应的goal，所以其实应该就只有一个才对，后续可以把这个数组给去掉
-            img_goal  = episode.goals[task.active_subtask_idx][0]['image_goals'][img_idx]
-            img_goal = InstanceImageParameters(**img_goal)
+            img_goal  = episode.goals[task.active_subtask_idx][0].image_goals[img_idx]
             self._current_image_goal = self._get_instance_image_goal(img_goal)
             return self._current_image_goal
             # return {
