@@ -266,6 +266,42 @@ class CacheGoals:
         )
         data = load_pickle(out_path)
         print(len(data))
+    
+    def load_1(self, scene):
+        scene = "2Pc8W48bu21"
+        out_path_clip = os.path.join(
+            self.output_path, f"{scene}_CLIP_iin_embedding.pkl"
+        )
+        data1 = load_pickle(out_path_clip)
+        clip_image_count = 0
+        for k ,items in data1.items():
+            # print(f"clip: {k}, len {len(items)}")
+            clip_image_count += len(items)
+        print(clip_image_count)
+
+        out_path = os.path.join(
+            self.output_path, f"{scene}_{self.encoder_name}_embedding.pkl"
+        )
+        data = load_pickle(out_path)
+
+        siglip_image_count = 0
+        for k ,items in data.items():
+            # print(f"siglip: {k}, len {len(items)}")
+            siglip_image_count += len(items)
+        print(siglip_image_count)
+
+        train_dataset_json = f"data/datasets/ovon/hm3d/v2_new/train/content/{scene}.json.gz"
+        dataset = load_dataset(train_dataset_json) 
+        
+        
+        dataset_image_goal_count = 0
+        goals = dataset["goals_by_category"]
+        for k, category_goals in goals.items():
+            for goal in category_goals:
+                dataset_image_goal_count += len(goal["image_goals"])
+                # print(f"dataset, object_id {goal['object_id']}, len {len(goal['image_goals'])}")
+        print(dataset_image_goal_count)
+        print(len(data))
 
 
     def run_all_scene_cache_image_goals(self):
@@ -356,6 +392,9 @@ class CacheGoals:
                         continue
 
                     object_id = goal_val.object_id
+                    if object_id == "pool table_414":
+                        print('very intersting')
+
                     key = f"{scene_id}_{object_id}"
 
                     t_sensor_start = time.perf_counter()
@@ -409,9 +448,6 @@ class CacheGoals:
             f.write(msg + "\n")  # 文件追加写入
 
 
-
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -428,7 +464,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output-path",
         type=str,
-        default="./tmp",
+        default="./tmp/iin/train_embeddings",
     )
     parser.add_argument(
         "--scene",
@@ -462,6 +498,7 @@ if __name__ == "__main__":
         add_noise=args.add_noise,
     )
     # cache.run(args.scene)
-    # cache.load(args.scene)
+    # cache.load_1(args.scene)
     # cache.run_cache_object_goals()
     cache.run_all_scene_cache_image_goals()
+    # cache.run_cache_image_goals_with_concurrent("2Pc8W48bu21", 256)

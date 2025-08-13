@@ -174,12 +174,15 @@ class GoatDatasetV1(PointNavDatasetV1):
                 goal_inst_id = goal[2]
 
                 # goals_by_category里面累积了所有scene的东西
-                dset_same_cat_goals = self.goals_by_category[composite_episode.goals_key_by_idx(idx)]
+                # ！！！这里是原对象，下面在children_categories那部分做了extend的，所以会在原本的列表做extend的，也就是goals_by_category做扩展，这不是需要的行为，我们要做拷贝
+                #dset_same_cat_goals = self.goals_by_category[composite_episode.goals_key_by_idx(idx)]
+                dset_same_cat_goals = list(self.goals_by_category[composite_episode.goals_key_by_idx(idx)])
                 # 处理子类型
                 if len(dset_same_cat_goals) == 0:
                     print(f"goals_key not exist {composite_episode.goals_key_by_idx(idx)}")
                     exit(-1)
 
+                # 其实children_categories应该只是给object类型的，所以这部分的逻辑放在goal_type=="object"里面也是可以的
                 children_categories = dset_same_cat_goals[0].children_object_categories
 
                 for child_category in children_categories:
