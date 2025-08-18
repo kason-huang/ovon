@@ -38,6 +38,9 @@ class GoatEpisode(NavigationEpisode):
     
     def goals_key_by_idx(self, idx) -> str:
         return f"{os.path.basename(self.scene_id)}_{self.tasks[idx][0]}"
+    
+    def current_task_goal_type(self) -> str:
+        return self.tasks[self.tasks[self.active_subtask_idx][1]]
 
     # @property
     # def goals_keys(self) -> Dict:

@@ -308,7 +308,10 @@ class CacheGoals:
 
         # 这里要同步去修改配置文件里面的路径
         # 获取split的值
-        split = "train"
+        # split = "train"
+        # split = "val_seen"
+        # split = "val_seen_synonyms"
+        split = "val_unseen"
         # 凭借split的路径
         data_path = "./data/datasets/ovon/hm3d/v2_new"
         # data_path = "./data/datasets/ovon/hm3d/v2_new"
@@ -324,7 +327,8 @@ class CacheGoals:
 
         # 一步步调用run_cache_image_goals
         for scene in scenes:
-            self.output_path = "./tmp/iin/train_embeddings"
+            self.output_path = f"./tmp/iin/{split}_embeddings"
+            os.makedirs(self.output_path, exist_ok=True)
             #self.run_cache_image_goals(scene=scene)
             self.run_cache_image_goals_with_concurrent(scene=scene, batch_size=256)
     

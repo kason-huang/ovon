@@ -38,7 +38,8 @@ habitat:
     #     type: OVONDistanceToGoal
   dataset:
     type: "Goat-v1"
-    split: train
+    split: val_unseen
+    #split: val_seen
     #data_path: data/datasets/ovon/hm3d/v2_new_small/{split}/{split}.json.gz
     data_path: data/datasets/ovon/hm3d/v2_new/{split}/{split}.json.gz
   simulator:
