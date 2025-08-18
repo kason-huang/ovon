@@ -36,7 +36,7 @@ class SigLIPEncoder(nn.Module):
         else:
             assert (rgb >= 0.0).all() and (rgb <= 1.0).all()
         with torch.inference_mode():
-            # Output will be of size Bx3x224x224
+            # rgb be of size Bx3x224x224
             x = self.transforms(rgb)
             # Embedding will be 1x768
             x = self.model(x)

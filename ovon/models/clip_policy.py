@@ -317,7 +317,7 @@ class OVONNet(Net):
 
         # Visual encoder
         self.visual_encoder = make_encoder(backbone, observation_space)
-        if backbone in ["clip_attnpool", "siglip"]:
+        if backbone in ["clip_attnpool", "siglip", "goatsiglip"]:
             self.visual_fc = nn.Identity()
             if backbone == "clip_attnpool":
                 clip_embedding_size = 1024
