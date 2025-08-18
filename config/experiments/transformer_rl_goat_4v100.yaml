@@ -86,9 +86,9 @@ habitat_baselines:
   tensorboard_dir: "tb_0815"
   video_dir: "video_dir"
   test_episode_count: -1
-  eval_ckpt_path_dir: "data/new_checkpoints_goat_0815"
+  eval_ckpt_path_dir: "data/new_checkpoints_goat_0818"
   num_environments: 16
-  checkpoint_folder: "data/new_checkpoints_goat_0815"
+  checkpoint_folder: "data/new_checkpoints_goat_0818"
   trainer_name: "ver_transformer"
   num_updates: -1
   total_num_steps: 150000000
