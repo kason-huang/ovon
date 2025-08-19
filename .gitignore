@@ -1,4 +1,4 @@
-# python
+#python
 __pycache__/
 *.egg-info/
 
@@ -8,7 +8,6 @@ habitat-lab
 
 # development
 .idea
-.vscode
 
 # data
 data/

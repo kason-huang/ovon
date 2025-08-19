@@ -1,0 +1,136 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Train OVON Transformer Dagger",
+      "type": "python",
+      "request": "launch",
+      "module": "ovon.run",
+      "args": [
+            "--run-type", "train",
+            "--exp-config", "config/experiments/transformer_dagger.yaml",
+            "habitat_baselines.num_environments=1",
+            "habitat_baselines.num_processes=1"
+      ],
+      "console": "integratedTerminal",
+      "subProcess": true,
+      "justMyCode": false,
+      "redirectOutput": true,
+    },
+    {
+      "name": "Train OVON Transformer Dagger with small dataset",
+      "type": "python",
+      "request": "launch",
+      "module": "ovon.run",
+      "args": [
+            "--run-type", "train",
+            "--exp-config", "config/experiments/transformer_dagger_small.yaml",
+            "habitat_baselines.num_environments=1",
+            "habitat_baselines.num_processes=1"
+      ],
+      "console": "integratedTerminal",
+      "subProcess": true,
+      "justMyCode": false,
+      "redirectOutput": true,
+    },
+    {
+      "name": "Train OVON Transformer RL",
+      "type": "python",
+      "request": "launch",
+      "module": "ovon.run",
+      "args": [
+            "--run-type", "train",
+            "--exp-config", "config/experiments/transformer_rl.yaml",
+            "habitat_baselines.num_environments=1",
+            "habitat_baselines.num_processes=1"
+      ],
+      "console": "integratedTerminal",
+      "subProcess": true,
+      "justMyCode": false,
+      "redirectOutput": true,
+    },
+    {
+      "name": "Debug Train OVON Transformer RL with small dataset",
+      "type": "python",
+      "request": "launch",
+      "module": "ovon.run",
+      "args": [
+            "--run-type", "train",
+            "--exp-config", "config/experiments/transformer_rl_small.yaml",
+            "habitat_baselines.num_environments=1",
+            "habitat_baselines.num_processes=1"
+      ],
+      "console": "integratedTerminal",
+      "subProcess": true,
+      "justMyCode": false,
+      "redirectOutput": true,
+    },
+    {
+      "name": "Train OVON Transformer RL with image_gaol and object_goal",
+      "type": "python",
+      "request": "launch",
+      "module": "ovon.run",
+      "args": [
+            "--run-type", "train",
+            "--exp-config", "config/experiments/transformer_rl_goat.yaml",
+            "habitat_baselines.num_environments=4",
+            "habitat_baselines.num_processes=4"
+      ],
+      "console": "integratedTerminal",
+      "subProcess": true,
+      "justMyCode": false,
+      "redirectOutput": true,
+    },
+    {
+      "name": "Train OVON Transformer RL(small) with image_gaol and object_goal",
+      "type": "python",
+      "request": "launch",
+      "module": "ovon.run",
+      "args": [
+            "--run-type", "train",
+            "--exp-config", "config/experiments/transformer_rl_goat_small.yaml",
+            "habitat_baselines.num_environments=1",
+            "habitat_baselines.num_processes=1"
+      ],
+      "console": "integratedTerminal",
+      "subProcess": true,
+      "justMyCode": false,
+      "redirectOutput": true,
+    },
+    {
+      "name": "eval OVON Transformer",
+      "type": "python",
+      "request": "launch",
+      "module": "ovon.run",
+      "args": [
+            "--run-type", "eval",
+            "--exp-config", "config/experiments/transformer_dagger.yaml",
+			      "habitat_baselines.eval_ckpt_path_dir=/root/workspace/lab/ovon/data/new_checkpoints_0724/latest.pth",
+            "habitat_baselines.num_environments=4",
+            "habitat_baselines.num_processes=1"
+	  ],
+      "console": "integratedTerminal",
+      "subProcess": true,
+      "justMyCode": false,
+      "redirectOutput": true,
+    },
+    {
+      "name": "Python: 当前文件",
+      "type": "python",
+      "request": "launch",
+      "program": "${file}",         // 表示当前打开的文件
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Python: 调试ovon的goat cache_image_goals",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/ovon/utils/data_transfer/cache_goals.py",
+      "args": [],
+      "console": "integratedTerminal",
+      "subProcess": true,
+      "justMyCode": false,
+      "redirectOutput": true,
+    }
+  ]
+}
