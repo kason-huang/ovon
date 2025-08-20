@@ -1,4 +1,5 @@
 # 1. 用 open_clip
+
 from open_clip import create_model_from_pretrained
 from PIL import Image
 import torch
