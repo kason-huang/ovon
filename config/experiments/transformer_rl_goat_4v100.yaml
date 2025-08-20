@@ -83,7 +83,7 @@ habitat:
 
 habitat_baselines:
   torch_gpu_id:  ${env:LOCAL_RANK,0}
-  tensorboard_dir: "tb_0815"
+  tensorboard_dir: "tb_0818"
   video_dir: "video_dir"
   test_episode_count: -1
   eval_ckpt_path_dir: "data/new_checkpoints_goat_0818"
