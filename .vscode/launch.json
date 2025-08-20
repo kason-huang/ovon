@@ -82,6 +82,22 @@
       "redirectOutput": true,
     },
     {
+      "name": "Eval OVON Transformer RL with image_gaol and object_goal",
+      "type": "python",
+      "request": "launch",
+      "module": "ovon.run",
+      "args": [
+            "--run-type", "eval",
+            "--exp-config", "config/experiments/transformer_rl_goat_eval.yaml",
+            "habitat_baselines.eval_ckpt_path_dir=/root/workspace/lab/ovon/data/new_checkpoints_goat_0815/ckpt.49.pth",
+            "habitat.dataset.split=val_unseen",
+      ],
+      "console": "integratedTerminal",
+      "subProcess": true,
+      "justMyCode": false,
+      "redirectOutput": true,
+    },
+    {
       "name": "Train OVON Transformer RL(small) with image_gaol and object_goal",
       "type": "python",
       "request": "launch",

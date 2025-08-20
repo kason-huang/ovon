@@ -445,7 +445,7 @@ class OVONNet(Net):
             num_layers=self._num_recurrent_layers,
         )
     
-    def forward_new(
+    def forward(
         self,
         observations: Dict[str, torch.Tensor],
         rnn_hidden_states,
@@ -537,7 +537,7 @@ class OVONNet(Net):
         return out, rnn_hidden_states, aux_loss_state
 
 
-    def forward(
+    def forward_old(
         self,
         observations: Dict[str, torch.Tensor],
         rnn_hidden_states,
