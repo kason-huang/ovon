@@ -682,11 +682,21 @@ class VERTransformerTrainer(VERTrainer):
 
     @rank0_only
     def _training_log(self, writer, losses: Dict[str, float], prev_time: int = 0):
-        deltas = {
-            k: (v[-1] - v[0]).sum().item() if len(v) > 1 else v[0].sum().item()
+        # deltas = {
+        #     k: (v[-1] - v[0]).sum().item() if len(v) > 1 else v[0].sum().item()
+        #     for k, v in self.window_episode_stats.items()
+        # }
+        # deltas["count"] = max(deltas["count"], 1.0)
+
+        raw_deltas = {
+        k: (v[-1] - v[0]).sum().item() if len(v) > 1 else v[0].sum().item()
             for k, v in self.window_episode_stats.items()
         }
-        deltas["count"] = max(deltas["count"], 1.0)
+        episodes_in_window = float(raw_deltas.get("count", 0.0))   # NEW
+
+        # 再做用于“按 episode 平均”的分母，避免除 0
+        deltas = raw_deltas.copy()
+        deltas["count"] = max(episodes_in_window, 1.0)
 
         writer.add_scalar(
             "reward",
@@ -706,6 +716,13 @@ class VERTransformerTrainer(VERTrainer):
             writer.add_scalar(f"metrics/{k}", v, self.num_steps_done)
         for k, v in losses.items():
             writer.add_scalar(f"learner/{k}", v, self.num_steps_done)
+        
+
+        # === 新增：episode 数量统计 ===
+        self.episodes_done_total += int(episodes_in_window)                           # NEW
+        writer.add_scalar("episodes/this_window", episodes_in_window, self.num_steps_done)  # NEW
+        writer.add_scalar("episodes/total", self.episodes_done_total, self.num_steps_done)  # NEW
+
 
         fps = self.num_steps_done / ((time.time() - self.t_start) + prev_time)
         writer.add_scalar("perf/fps", fps, self.num_steps_done)
