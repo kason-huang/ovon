@@ -18,6 +18,7 @@ from habitat.utils.geometry_utils import quaternion_from_coeff
 from habitat_sim import bindings as hsim
 from habitat_sim.agent.agent import AgentState, SixDOFPose
 from ovon.utils.utils import load_pickle
+from ovon.task.goat_goal_helper import GoatGoalHelper
 
 @registry.register_sensor
 class GoatGoalSensor(Sensor):
@@ -158,6 +159,7 @@ class GoatEpisodeIdSensor(Sensor):
         return episode.episode_id
 
 
+
 @registry.register_sensor
 class GoatRawGoalSensor(Sensor):
     r"""A sensor for Goat goals"""
@@ -171,14 +173,16 @@ class GoatRawGoalSensor(Sensor):
         **kwargs: Any,
     ):
         self._sim = sim
-        self.image_cache_base_dir = config.image_cache
-        self.image_encoder = config.image_cache_encoder
-        self.image_cache = None
-        # self.language_cache = load_pickle(config.language_cache)
-        # self.object_cache = load_pickle(config.object_cache)
         self._current_scene_id = ""
         self._current_episode_id = ""
         self._current_episode_image_goal = None
+        self.image_goal_shape = (256, 256, 3)
+        self.object_cache = load_pickle(config.object_cache)
+
+        k = list(self.object_cache.keys())[0]
+        self._embed_dim = self.object_cache[k].shape[0] # the _embed_dim == 768
+        for v in self.object_cache.values():
+            assert self._embed_dim == v.shape[0] and v.ndim == 1
         super().__init__(config=config)
 
     def _get_uuid(self, *args: Any, **kwargs: Any) -> str:
@@ -188,10 +192,12 @@ class GoatRawGoalSensor(Sensor):
         return SensorTypes.SEMANTIC
 
     def _get_observation_space(self, *args: Any, **kwargs: Any):
-        return spaces.Box(
-            low=-np.inf, high=np.inf, shape=(1024,), dtype=np.float32
-        )
-    
+        return spaces.Dict({
+            'object': spaces.Box(low=-np.inf, high=np.inf, shape=(self._embed_dim,), dtype=np.float32),
+            'image': spaces.Box(0, 255, shape=self.image_goal_shape, dtype=np.uint8),
+            "mask": spaces.MultiBinary(2),           # [has_image, has_category]
+        })
+   
     def _add_sensor(
         self, img_params: InstanceImageParameters, sensor_uuid: str
     ) -> None:
@@ -271,22 +277,24 @@ class GoatRawGoalSensor(Sensor):
         # we only calcuate the first sub task now
         task_type = episode.tasks[task.active_subtask_idx][1]
         if task_type == "object":
-            self.category = episode.tasks[task.active_subtask_idx][0]
-            return self.category
-            # return {
-                # "type": task_type,
-                # "value": self.category
-            # }
+            category = episode.tasks[task.active_subtask_idx][0]
+            if category not in self.object_cache:
+                print("Missing category: {}".format(category))
+            return {
+                "image": np.zeros(self.image_goal_shape, np.uint8), 
+                "object":  self.object_cache[category],
+                "mask": np.array([0, 1], np.int8)
+            }
         elif task_type == "image":
             img_idx = episode.tasks[task.active_subtask_idx][3]
             # 这里的0表示的就是object_id对应的goal，所以其实应该就只有一个才对，后续可以把这个数组给去掉
             img_goal  = episode.goals[task.active_subtask_idx][0].image_goals[img_idx]
             self._current_image_goal = self._get_instance_image_goal(img_goal)
-            return self._current_image_goal
-            # return {
-                # "type": task_type,
-                # "value": self._current_image_goal
-            # }
+            return {
+                "image": self._current_episode_image_goal,
+                "object": np.zeros((self._embed_dim), np.float32),
+                "mask": np.array([1,0], np.int8)
+            }
 
         # output_embedding = np.zeros((1024,), dtype=np.float32)
 
@@ -320,3 +328,63 @@ class GoatRawGoalSensor(Sensor):
         #         task_type = "image"
         #     else:
         #         raise NotImplementedError
+
+
+
+class _BaseGoatSensor(Sensor):
+    def __init__(self, sim, config, **kwargs):
+        self._sim = sim
+        # 共享一个 helper（每个 sim 只创建一次）
+        if not hasattr(self._sim, "_goat_helper"):
+            self._sim._goat_helper = GoatGoalHelper(self._sim, config)
+        self.helper: GoatGoalHelper = self._sim._goat_helper
+        super().__init__(config=config)
+
+    def _get_sensor_type(self, *args, **kwargs):
+        return SensorTypes.SEMANTIC
+
+
+# --- Image 传感器 ---
+@registry.register_sensor
+class GoatGoalRawImageSensor(_BaseGoatSensor):
+    cls_uuid: str = "goat_goal_raw_image"
+    def _get_uuid(self, *_, **__): return self.cls_uuid
+    def _get_observation_space(self, *_, **__):
+        H, W, C = self.helper.image_shape
+        return spaces.Box(low=0, high=255, shape=(H, W, C), dtype=np.uint8)
+
+    def get_observation(self, observations, *, episode, task, **kwargs):
+        pack = self.helper.get_goal_pack(episode, task)
+        if pack["image"] is None:
+            H, W, C = self.helper.image_shape
+            return np.zeros((H, W, C), np.uint8)
+        return pack["image"].astype(np.uint8, copy=False)
+
+# --- Object embedding 传感器 ---
+
+@registry.register_sensor
+class GoatGoalObjectSensor(_BaseGoatSensor):
+    cls_uuid: str = "goat_goal_object"
+    def _get_uuid(self, *_, **__): return self.cls_uuid
+    def _get_observation_space(self, *_, **__):
+        E = self.helper.embed_dim
+        # 选一个保守边界，避免 inf
+        return spaces.Box(low=-10.0, high=10.0, shape=(E,), dtype=np.float32)
+
+    def get_observation(self, observations, *, episode, task, **kwargs):
+        pack = self.helper.get_goal_pack(episode, task)
+        if pack["object"] is None:
+            return np.zeros((self.helper.embed_dim,), np.float32)
+        return pack["object"].astype(np.float32, copy=False)
+
+# --- Mask 传感器 ---
+@registry.register_sensor
+class GoatGoalMaskSensor(_BaseGoatSensor):
+    cls_uuid: str = "goat_goal_mask"
+    def _get_uuid(self, *_, **__): return self.cls_uuid
+    def _get_observation_space(self, *_, **__):
+        return spaces.MultiBinary(2)  # [has_image, has_object]
+
+    def get_observation(self, observations, *, episode, task, **kwargs):
+        pack = self.helper.get_goal_pack(episode, task)
+        return pack["mask"]

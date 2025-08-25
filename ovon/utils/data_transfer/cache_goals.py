@@ -121,6 +121,12 @@ class CacheGoals:
         val_unseen_categories = load_categories_from_dataset(
             dataset_path
         )
+        dataset_path = f"{self.dataset_path}/ovon_val_seen/content"
+        ovon_val_seen_categories = load_categories_from_dataset(
+            dataset_path
+        )
+        
+
 
         # Print the first 5 categories of each split
         print("Total train categories num: {}".format(len(goal_categories)))
@@ -133,8 +139,13 @@ class CacheGoals:
         goal_categories.extend(val_seen_categories)
         goal_categories.extend(val_seen_synoyms_categories)
         goal_categories.extend(val_unseen_categories)
+        goal_categories = list(set(goal_categories))
+        print("Total goal categories (only goat): {}".format(len(goal_categories)))
 
-        print("Total goal categories: {}".format(len(goal_categories)))
+        goal_categories.extend(ovon_val_seen_categories)
+        goal_categories = list(set(goal_categories))
+        print("Total goal categories (include ovon seen): {}".format(len(goal_categories)))
+
         print(
             "Train categories: {}, Val seen categories: {}, Val unseen easy categories: {},"
             " Val unseen hard categories: {}".format(
@@ -503,6 +514,6 @@ if __name__ == "__main__":
     )
     # cache.run(args.scene)
     # cache.load_1(args.scene)
-    # cache.run_cache_object_goals()
-    cache.run_all_scene_cache_image_goals()
+    cache.run_cache_object_goals()
+    # cache.run_all_scene_cache_image_goals()
     # cache.run_cache_image_goals_with_concurrent("2Pc8W48bu21", 256)

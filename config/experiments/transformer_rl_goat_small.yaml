@@ -106,7 +106,7 @@ habitat_baselines:
 
     policy:
       name: "OVONTransformerPolicy"
-      backbone: "goatsiglip"
+      backbone: "siglip"
       fusion_type: "concat"
       use_vis_query: True
       use_residual: True

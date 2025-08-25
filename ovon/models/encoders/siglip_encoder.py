@@ -38,7 +38,7 @@ class SigLIPEncoder(nn.Module):
         with torch.inference_mode():
             # rgb be of size Bx3x224x224
             x = self.transforms(rgb)
-            # Embedding will be 1x768
+            # Embedding will be 1x768 （256 / 16 = 16, 所以是3X16X16 => 768,所以每个特种图其实压缩为1个元素了）
             x = self.model(x)
 
         return x

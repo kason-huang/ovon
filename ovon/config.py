@@ -93,9 +93,24 @@ class GoatGoalSensorConfig(LabSensorConfig):
 class GoatRawGoalSensorConfig(LabSensorConfig):
     type: str = "GoatRawGoalSensor"
     object_cache: str = ""
-    language_cache: str = ""
-    image_cache: str = ""
-    image_cache_encoder: str = ""
+
+
+@dataclass
+class GoatGoalRawImageSensorConfig(LabSensorConfig):
+    type: str = "GoatGoalRawImageSensor"
+    object_cache: str = ""
+
+
+@dataclass
+class GoatGoalObjectSensorConfig(LabSensorConfig):
+    type: str = "GoatGoalObjectSensor"
+    object_cache: str = ""
+
+
+@dataclass
+class GoatGoalMaskSensorConfig(LabSensorConfig):
+    type: str = "GoatGoalMaskSensor"
+    object_cache: str = ""
 
 ##########################################################################
 # Measurements
@@ -137,6 +152,17 @@ class OVONObjectGoalIDMeasurementConfig(MeasurementConfig):
     type: str = "OVONObjectGoalID"
     cache: str = "data/clip_embeddings/ovon_stretch_final_cache.pkl"
 
+@dataclass
+class EpisodeCountMeasurementConfig(MeasurementConfig):
+    type: str = "EpisodeCount"
+
+@dataclass
+class ImageTaskCountMeasurementConfig(MeasurementConfig):
+    type: str = "ImageTaskCount"
+
+@dataclass
+class ObjectTaskCountMeasurementConfig(MeasurementConfig):
+    type: str = "ObjectTaskCount"
 
 ##########################################################################
 # Simulator
@@ -349,6 +375,26 @@ cs.store(
     node=CollisionsMeasurementConfig,
 )
 
+cs.store(
+    package="habitat.task.measurements.episode_count",
+    group="habitat/task/measurements",
+    name="episode_count",
+    node=EpisodeCountMeasurementConfig,
+)
+
+cs.store(
+    package="habitat.task.measurements.image_task_count",
+    group="habitat/task/measurements",
+    name="image_task_count",
+    node=ImageTaskCountMeasurementConfig,
+)
+
+cs.store(
+    package="habitat.task.measurements.object_task_count",
+    group="habitat/task/measurements",
+    name="object_task_count",
+    node=ObjectTaskCountMeasurementConfig,
+)
 
 cs.store(
     package=f"habitat.task.lab_sensors.goat_goal_sensor",
@@ -362,6 +408,27 @@ cs.store(
     group="habitat/task/lab_sensors",
     name="goat_raw_goal_sensor",
     node=GoatRawGoalSensorConfig,
+)
+
+cs.store(
+    package=f"habitat.task.lab_sensors.goat_goal_raw_image_sensor",
+    group="habitat/task/lab_sensors",
+    name="goat_goal_raw_image_sensor",
+    node=GoatGoalRawImageSensorConfig,
+)
+
+cs.store(
+    package=f"habitat.task.lab_sensors.goat_goal_object_sensor",
+    group="habitat/task/lab_sensors",
+    name="goat_goal_object_sensor",
+    node=GoatGoalObjectSensorConfig,
+)
+
+cs.store(
+    package=f"habitat.task.lab_sensors.goat_goal_mask_sensor",
+    group="habitat/task/lab_sensors",
+    name="goat_goal_mask_sensor",
+    node=GoatGoalMaskSensorConfig,
 )
 
 cs.store(

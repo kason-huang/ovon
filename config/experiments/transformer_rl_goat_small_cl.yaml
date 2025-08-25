@@ -20,9 +20,15 @@ defaults:
     - spl
     - soft_spl
     - distance_to_goal_reward
+    - episode_count
+    - image_task_count
+    - object_task_count
   - /habitat/task/lab_sensors:
     - step_id_sensor
     - goat_goal_sensor
+    # - goat_goal_raw_image_sensor
+    # - goat_goal_object_sensor
+    # - goat_goal_mask_sensor
     # - goat_modal_type_sensor
     # - goat_episode_id_sensor
   - _self_
@@ -42,6 +48,12 @@ habitat:
     success_measure: spl
     end_on_success: True
     lab_sensors:
+      # goat_goal_raw_image_sensor:
+      #   object_cache: tmp/ovon/category_name_siglip_embedding.pkl
+      # goat_goal_object_sensor:
+      #   object_cache: tmp/ovon/category_name_siglip_embedding.pkl
+      # goat_goal_mask_sensor:
+      #   object_cache: tmp/ovon/category_name_siglip_embedding.pkl
       goat_goal_sensor:
         object_cache: tmp/ovon/category_name_siglip_embedding.pkl
         image_cache: tmp/iin/train_embeddings/
@@ -53,12 +65,10 @@ habitat:
       distance_to_goal:
         type: OVONDistanceToGoal
         distance_to: VIEW_POINTS
-      distance_to_goal_reward:
-        type: DistanceToGoalReward
   dataset:
     type: "Goat-v1"
     split: train
-    data_path: data/datasets/ovon/hm3d/v2_new/{split}/{split}.json.gz
+    data_path: data/datasets/ovon/hm3d/v2_new_small/{split}/{split}.json.gz
   simulator:
     type: "OVONSim-v0"
     turn_angle: 30
@@ -75,27 +85,28 @@ habitat:
         height: 1.41
         radius: 0.17
     habitat_sim_v0:
-      gpu_device_id: ${env:LOCAL_RANK,0}
+      gpu_device_id: 0
       allow_sliding: False
     navmesh_settings:
       agent_max_climb: 0.1
       cell_height: 0.05
 
 habitat_baselines:
-  torch_gpu_id:  ${env:LOCAL_RANK,0}
-  tensorboard_dir: "tb_0818"
+  torch_gpu_id: 0
+  tensorboard_dir: "tb_cl"
   video_dir: "video_dir"
   test_episode_count: -1
-  eval_ckpt_path_dir: "data/new_checkpoints_goat_0818"
-  num_environments: 16
-  checkpoint_folder: "data/new_checkpoints_goat_0818"
+  eval_ckpt_path_dir: "data/new_checkpoints_goat_small_cl"
+  num_environments: 8
+  checkpoint_folder: "data/new_checkpoints_goat_small_cl"
   trainer_name: "ver_transformer"
   num_updates: -1
-  total_num_steps: 150000000
+  #total_num_steps: 150000000
+  total_num_steps: 2000000
   log_interval: 10
-  num_checkpoints: 50
-  # num_checkpoints: -1
-  # checkpoint_interval: 20
+  # num_checkpoints: 50
+  num_checkpoints: -1
+  checkpoint_interval: 20
   # Force PyTorch to be single threaded as
   # this improves performance considerably
   force_torch_single_threaded: True
@@ -107,7 +118,7 @@ habitat_baselines:
 
     policy:
       name: "OVONTransformerPolicy"
-      backbone: "siglip"
+      backbone: "siglip_cl"
       fusion_type: "concat"
       use_vis_query: True
       use_residual: True
@@ -125,18 +136,14 @@ habitat_baselines:
     ppo:
       # ppo params
       clip_param: 0.2
-      # ppo_epoch: 1
-      # num_mini_batch: 2
+      ppo_epoch: 1
+      num_mini_batch: 2
       value_loss_coef: 0.5
       entropy_coef: 0.01
       lr: 2.5e-4
       eps: 1e-5
-      max_grad_norm: 0.5
-      # num_steps: 100
-      #num_steps: 128
-      num_steps: 384
-      num_mini_batch: 2
-      ppo_epoch: 1
+      max_grad_norm: 0.2
+      num_steps: 100
       use_gae: True
       gamma: 0.99
       tau: 0.95
@@ -149,7 +156,7 @@ habitat_baselines:
       hidden_size: 512
 
     ddppo:
-      sync_frac: 0.7
+      sync_frac: 0.6
       # The PyTorch distributed backend to use
       distrib_backend: NCCL
       # Visual encoder backbone
@@ -159,10 +166,10 @@ habitat_baselines:
       # Initialize just the visual encoder backbone with pretrained weights
       pretrained_encoder: False
       # Whether or not the visual encoder backbone will be trained.
-      train_encoder: False
+      train_encoder: True
       # Whether or not to reset the critic linear layer
       reset_critic: True
     
     # for debug
-    # ver:
-    #   num_inference_workers: 1
+    ver:
+      num_inference_workers: 1

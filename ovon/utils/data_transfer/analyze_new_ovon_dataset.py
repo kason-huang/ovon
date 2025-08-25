@@ -36,13 +36,35 @@ def find_missing_image_goals(root_dir):
     
     return pd.DataFrame(missing_records)
 
+
+def count_split_episodes(root_dir, split):
+    content_dir = os.path.join(root_dir, split, "content")
+    
+    # 遍历 .json.gz 文件
+    total_count = 0
+    for filename in os.listdir(content_dir):
+        if filename.endswith(".json.gz"):
+            file_path = os.path.join(content_dir, filename)
+            with gzip.open(file_path, 'rt', encoding='utf-8') as f:
+                data = json.load(f)
+            
+            # 检查 goals
+            episodes = data.get("episodes", {})
+            total_count += len(episodes)
+            
+    return total_count
+
 # 使用示例
 if __name__ == "__main__":
-    dataset_path = "/root/workspace/lab/goat-bench/data/datasets/goat_bench/hm3d/v2_new"
-    df_missing = find_missing_image_goals(dataset_path)
+    dataset_path = "/root/workspace/lab/ovon/data/datasets/ovon/hm3d/v2_new"
+
+    # df_missing = find_missing_image_goals(dataset_path)
     
-    if df_missing.empty:
-        print("所有 goals 都包含 image_goals，没有缺失。")
-    else:
-        print("缺失 image_goals 的目标：")
-        print(df_missing)
+    # if df_missing.empty:
+    #     print("所有 goals 都包含 image_goals，没有缺失。")
+    # else:
+    #     print("缺失 image_goals 的目标：")
+    #     print(df_missing)
+
+    episode_nums = count_split_episodes(dataset_path, split="train")
+    print(f"num  {episode_nums}")

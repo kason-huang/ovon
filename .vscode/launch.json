@@ -89,8 +89,7 @@
       "args": [
             "--run-type", "eval",
             "--exp-config", "config/experiments/transformer_rl_goat_eval.yaml",
-            "habitat_baselines.eval_ckpt_path_dir=/root/workspace/lab/ovon/data/new_checkpoints_goat_0815/ckpt.49.pth",
-            "habitat.dataset.split=val_unseen",
+            "habitat_baselines.eval_ckpt_path_dir=/root/workspace/lab/ovon/data/new_checkpoints_goat_0818/latest.pth"
       ],
       "console": "integratedTerminal",
       "subProcess": true,
@@ -105,6 +104,22 @@
       "args": [
             "--run-type", "train",
             "--exp-config", "config/experiments/transformer_rl_goat_small.yaml",
+            "habitat_baselines.num_environments=1",
+            "habitat_baselines.num_processes=1"
+      ],
+      "console": "integratedTerminal",
+      "subProcess": true,
+      "justMyCode": false,
+      "redirectOutput": true,
+    },
+    {
+      "name": "Train OVON Transformer RL_with_compress_layer(small) with image_gaol and object_goal",
+      "type": "python",
+      "request": "launch",
+      "module": "ovon.run",
+      "args": [
+            "--run-type", "train",
+            "--exp-config", "config/experiments/transformer_rl_goat_small_cl.yaml",
             "habitat_baselines.num_environments=1",
             "habitat_baselines.num_processes=1"
       ],

@@ -7,6 +7,7 @@ from ovon.models.encoders.dinov2_encoder import DINOV2Encoder
 from ovon.models.encoders.siglip_encoder import SigLIPEncoder
 from ovon.models.encoders.vc1_encoder import VC1Encoder
 from ovon.models.encoders.goat_siglip_encoder import GoatSigLIPEncoder
+from ovon.models.encoders.siglip_with_CL_encoder import SigLIPWithCompressionLayerEncoder
 
 POSSIBLE_ENCODERS = [
     "clip_attnpool",
@@ -16,7 +17,8 @@ POSSIBLE_ENCODERS = [
     "dinov2",
     "resnet",
     "siglip",
-    "goatsiglip"
+    "goatsiglip",
+    "siglip_cl"
 ]
 
 
@@ -44,6 +46,8 @@ def make_encoder(backbone: str, observation_space: spaces.Dict) -> Any:
         return SigLIPEncoder()
     elif backbone == "goatsiglip":
         return GoatSigLIPEncoder()
+    elif backbone == "siglip_cl":
+        return SigLIPWithCompressionLayerEncoder()
     elif backbone == "resnet":
         resnet_baseplanes = 32
         from habitat_baselines.rl.ddppo.policy import resnet
