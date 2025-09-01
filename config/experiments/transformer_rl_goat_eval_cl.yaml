@@ -23,7 +23,6 @@ defaults:
   - /habitat/task/lab_sensors:
     - step_id_sensor
     - goat_goal_sensor
-    # - goat_raw_goal_sensor
     # - goat_modal_type_sensor
     # - goat_episode_id_sensor
   - _self_
@@ -54,10 +53,12 @@ habitat:
       distance_to_goal:
         type: OVONDistanceToGoal
         distance_to: VIEW_POINTS
+      distance_to_goal_reward:
+        type: DistanceToGoalReward
   dataset:
     type: "Goat-v1"
     split: train
-    data_path: data/datasets/ovon/hm3d/v2_new_small/{split}/{split}.json.gz
+    data_path: data/datasets/ovon/hm3d/v2_new/{split}/{split}.json.gz
   simulator:
     type: "OVONSim-v0"
     turn_angle: 30
@@ -82,19 +83,21 @@ habitat:
 
 habitat_baselines:
   torch_gpu_id: 0
-  tensorboard_dir: "tb"
+  tensorboard_dir: "tb_goat_0815_eval_unseen"
   video_dir: "video_dir"
   test_episode_count: -1
-  eval_ckpt_path_dir: "data/new_checkpoints_goat_small"
-  num_environments: 8
-  checkpoint_folder: "data/new_checkpoints_goat_small"
+  eval_ckpt_path_dir: "data/new_checkpoints_goat_0825"
+  # num_environments: 10 
+  num_environments: 16
+  # num_processes: 3
+  checkpoint_folder: "data/new_checkpoints_goat_0825"
   trainer_name: "ver_transformer"
   num_updates: -1
   total_num_steps: 150000000
   log_interval: 10
-  # num_checkpoints: 50
-  num_checkpoints: -1
-  checkpoint_interval: 20
+  num_checkpoints: 50
+  # num_checkpoints: -1
+  # checkpoint_interval: 20
   # Force PyTorch to be single threaded as
   # this improves performance considerably
   force_torch_single_threaded: True
@@ -106,7 +109,8 @@ habitat_baselines:
 
     policy:
       name: "OVONTransformerPolicy"
-      backbone: "siglip"
+      backbone: "siglip_cl"
+      # backbone: "siglip"
       fusion_type: "concat"
       use_vis_query: True
       use_residual: True
@@ -125,13 +129,15 @@ habitat_baselines:
       # ppo params
       clip_param: 0.2
       ppo_epoch: 1
-      num_mini_batch: 2
+      # num_mini_batch: 2
+      num_mini_batch: 1
       value_loss_coef: 0.5
       entropy_coef: 0.01
       lr: 2.5e-4
       eps: 1e-5
       max_grad_norm: 0.2
-      num_steps: 100
+      # num_steps: 100
+      num_steps: 128
       use_gae: True
       gamma: 0.99
       tau: 0.95
@@ -154,12 +160,10 @@ habitat_baselines:
       # Initialize just the visual encoder backbone with pretrained weights
       pretrained_encoder: False
       # Whether or not the visual encoder backbone will be trained.
-      train_encoder: False
+      train_encoder: True
       # Whether or not to reset the critic linear layer
       reset_critic: True
     
     # for debug
-    ver:
-      num_inference_workers: 1
-      variable_experience: True
-      overlap_rollouts_and_learn: False
+    # ver:
+    #   num_inference_workers: 1

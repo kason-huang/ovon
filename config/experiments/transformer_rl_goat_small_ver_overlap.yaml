@@ -82,12 +82,12 @@ habitat:
 
 habitat_baselines:
   torch_gpu_id: 0
-  tensorboard_dir: "tb"
+  tensorboard_dir: "tb_ver"
   video_dir: "video_dir"
   test_episode_count: -1
-  eval_ckpt_path_dir: "data/new_checkpoints_goat_small"
+  eval_ckpt_path_dir: "data/new_checkpoints_goat_small_ver"
   num_environments: 8
-  checkpoint_folder: "data/new_checkpoints_goat_small"
+  checkpoint_folder: "data/new_checkpoints_goat_small_ver"
   trainer_name: "ver_transformer"
   num_updates: -1
   total_num_steps: 150000000
@@ -160,6 +160,6 @@ habitat_baselines:
     
     # for debug
     ver:
-      num_inference_workers: 1
+      num_inference_workers: 2
       variable_experience: True
       overlap_rollouts_and_learn: False

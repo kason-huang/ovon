@@ -59,7 +59,8 @@ fi
 
 log "目录修改完成，执行eval后 后开始回退..."
 # sleep 2
-python -m ovon.run   --run-type eval   --exp-config config/experiments/transformer_rl_goat_eval.yaml   habitat_baselines.eval_ckpt_path_dir=/root/workspace/lab/ovon/data/new_checkpoints_goat_0818/latest.pth
+#python -m ovon.run   --run-type eval   --exp-config config/experiments/transformer_rl_goat_eval_cl.yaml   habitat_baselines.eval_ckpt_path_dir=/root/workspace/lab/ovon/data/new_checkpoints_goat_0825/ckpt.37.pth
+python -m ovon.run   --run-type eval   --exp-config config/experiments/transformer_rl_goat_eval.yaml   habitat_baselines.eval_ckpt_path_dir=/root/workspace/lab/ovon/data/new_checkpoints_goat_0815/ckpt.37.pth
 
 # === 回退部分 ===
 if $did_mv_B && [[ -e "$DST_B" && ! -e "$SRC_B" ]]; then

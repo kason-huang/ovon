@@ -113,6 +113,20 @@
       "redirectOutput": true,
     },
     {
+      "name": "Train OVON Transformer RL(small ver overlay) with image_gaol and object_goal",
+      "type": "python",
+      "request": "launch",
+      "module": "ovon.run",
+      "args": [
+            "--run-type", "train",
+            "--exp-config", "config/experiments/transformer_rl_goat_small_ver_overlap.yaml",
+      ],
+      "console": "integratedTerminal",
+      "subProcess": true,
+      "justMyCode": false,
+      "redirectOutput": true,
+    },
+    {
       "name": "Train OVON Transformer RL_with_compress_layer(small) with image_gaol and object_goal",
       "type": "python",
       "request": "launch",

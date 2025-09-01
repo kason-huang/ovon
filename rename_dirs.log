@@ -39,3 +39,74 @@
 [2025-08-22 07:36:41] val_type=val_unseen - REVERT: ./data/datasets/ovon/hm3d/v2_new/val -> ./data/datasets/ovon/hm3d/v2_new/val_unseen
 [2025-08-22 07:36:41] val_type=val_unseen - 所有需要的目录已回退完成。
 
+[2025-08-29 03:10:29] val_type=val_seen - ERROR: 目标已存在: ./tmp/iin/train_embeddings
+[2025-08-29 03:10:29] val_type=val_seen - mv: ./data/datasets/ovon/hm3d/v2_new/val_seen -> ./data/datasets/ovon/hm3d/v2_new/val
+[2025-08-29 03:10:29] val_type=val_seen - 目录修改完成，执行eval后 后开始回退...
+[2025-08-29 03:11:25] val_type=val_seen - REVERT: ./data/datasets/ovon/hm3d/v2_new/val -> ./data/datasets/ovon/hm3d/v2_new/val_seen
+[2025-08-29 03:11:25] val_type=val_seen - 所有需要的目录已回退完成。
+
+[2025-08-29 03:21:58] val_type=val_seen - ERROR: 目标已存在: ./tmp/iin/train_embeddings
+[2025-08-29 03:21:58] val_type=val_seen - mv: ./data/datasets/ovon/hm3d/v2_new/val_seen -> ./data/datasets/ovon/hm3d/v2_new/val
+[2025-08-29 03:21:58] val_type=val_seen - 目录修改完成，执行eval后 后开始回退...
+[2025-08-29 03:22:16] val_type=val_seen - mv: ./tmp/iin/val_seen_embeddings -> ./tmp/iin/train_embeddings
+[2025-08-29 03:22:16] val_type=val_seen - ERROR: 源不存在: ./data/datasets/ovon/hm3d/v2_new/val_seen
+[2025-08-29 03:22:16] val_type=val_seen - 目录修改完成，执行eval后 后开始回退...
+[2025-08-29 03:22:45] val_type=val_seen - ERROR: 源不存在: ./tmp/iin/val_seen_embeddings
+[2025-08-29 03:22:45] val_type=val_seen - mv: ./data/datasets/ovon/hm3d/v2_new/val_seen -> ./data/datasets/ovon/hm3d/v2_new/val
+[2025-08-29 03:22:45] val_type=val_seen - 目录修改完成，执行eval后 后开始回退...
+[2025-08-29 03:23:33] val_type=val_seen - mv: ./tmp/iin/val_seen_embeddings -> ./tmp/iin/train_embeddings
+[2025-08-29 03:23:33] val_type=val_seen - mv: ./data/datasets/ovon/hm3d/v2_new/val_seen -> ./data/datasets/ovon/hm3d/v2_new/val
+[2025-08-29 03:23:33] val_type=val_seen - 目录修改完成，执行eval后 后开始回退...
+[2025-08-29 04:20:07] val_type=val_seen - REVERT: ./tmp/iin/train_embeddings -> ./tmp/iin/val_seen_embeddings
+[2025-08-29 04:20:07] val_type=val_seen - REVERT: ./data/datasets/ovon/hm3d/v2_new/val -> ./data/datasets/ovon/hm3d/v2_new/val_seen
+[2025-08-29 04:20:07] val_type=val_seen - 所有需要的目录已回退完成。
+
+[2025-08-29 06:23:58] val_type=val_unseen - mv: ./tmp/iin/val_unseen_embeddings -> ./tmp/iin/train_embeddings
+[2025-08-29 06:23:58] val_type=val_unseen - mv: ./data/datasets/ovon/hm3d/v2_new/val_unseen -> ./data/datasets/ovon/hm3d/v2_new/val
+[2025-08-29 06:23:58] val_type=val_unseen - 目录修改完成，执行eval后 后开始回退...
+[2025-08-29 07:06:16] val_type=val_unseen - REVERT: ./tmp/iin/train_embeddings -> ./tmp/iin/val_unseen_embeddings
+[2025-08-29 07:06:16] val_type=val_unseen - REVERT: ./data/datasets/ovon/hm3d/v2_new/val -> ./data/datasets/ovon/hm3d/v2_new/val_unseen
+[2025-08-29 07:06:16] val_type=val_unseen - 所有需要的目录已回退完成。
+
+[2025-08-30 06:53:13] val_type=val_seen - mv: ./tmp/iin/val_seen_embeddings -> ./tmp/iin/train_embeddings
+[2025-08-30 06:53:13] val_type=val_seen - mv: ./data/datasets/ovon/hm3d/v2_new/val_seen -> ./data/datasets/ovon/hm3d/v2_new/val
+[2025-08-30 06:53:13] val_type=val_seen - 目录修改完成，执行eval后 后开始回退...
+[2025-08-30 06:53:13] val_type=val_seen - REVERT: ./tmp/iin/train_embeddings -> ./tmp/iin/val_seen_embeddings
+[2025-08-30 06:53:13] val_type=val_seen - REVERT: ./data/datasets/ovon/hm3d/v2_new/val -> ./data/datasets/ovon/hm3d/v2_new/val_seen
+[2025-08-30 06:53:13] val_type=val_seen - 所有需要的目录已回退完成。
+
+[2025-08-30 06:54:16] val_type=val_seen - mv: ./tmp/iin/val_seen_embeddings -> ./tmp/iin/train_embeddings
+[2025-08-30 06:54:16] val_type=val_seen - mv: ./data/datasets/ovon/hm3d/v2_new/val_seen -> ./data/datasets/ovon/hm3d/v2_new/val
+[2025-08-30 06:54:16] val_type=val_seen - 目录修改完成，执行eval后 后开始回退...
+[2025-08-30 06:54:33] val_type=val_seen - REVERT: ./tmp/iin/train_embeddings -> ./tmp/iin/val_seen_embeddings
+[2025-08-30 06:54:33] val_type=val_seen - REVERT: ./data/datasets/ovon/hm3d/v2_new/val -> ./data/datasets/ovon/hm3d/v2_new/val_seen
+[2025-08-30 06:54:33] val_type=val_seen - 所有需要的目录已回退完成。
+
+[2025-08-30 06:56:07] val_type=val_seen - mv: ./tmp/iin/val_seen_embeddings -> ./tmp/iin/train_embeddings
+[2025-08-30 06:56:07] val_type=val_seen - mv: ./data/datasets/ovon/hm3d/v2_new/val_seen -> ./data/datasets/ovon/hm3d/v2_new/val
+[2025-08-30 06:56:07] val_type=val_seen - 目录修改完成，执行eval后 后开始回退...
+[2025-08-30 07:56:56] val_type=val_seen - REVERT: ./tmp/iin/train_embeddings -> ./tmp/iin/val_seen_embeddings
+[2025-08-30 07:56:56] val_type=val_seen - REVERT: ./data/datasets/ovon/hm3d/v2_new/val -> ./data/datasets/ovon/hm3d/v2_new/val_seen
+[2025-08-30 07:56:56] val_type=val_seen - 所有需要的目录已回退完成。
+
+[2025-08-30 08:11:36] val_type=val_unseen - mv: ./tmp/iin/val_unseen_embeddings -> ./tmp/iin/train_embeddings
+[2025-08-30 08:11:36] val_type=val_unseen - mv: ./data/datasets/ovon/hm3d/v2_new/val_unseen -> ./data/datasets/ovon/hm3d/v2_new/val
+[2025-08-30 08:11:36] val_type=val_unseen - 目录修改完成，执行eval后 后开始回退...
+[2025-08-30 09:09:51] val_type=val_unseen - REVERT: ./tmp/iin/train_embeddings -> ./tmp/iin/val_unseen_embeddings
+[2025-08-30 09:09:51] val_type=val_unseen - REVERT: ./data/datasets/ovon/hm3d/v2_new/val -> ./data/datasets/ovon/hm3d/v2_new/val_unseen
+[2025-08-30 09:09:51] val_type=val_unseen - 所有需要的目录已回退完成。
+
+[2025-08-30 09:17:16] val_type=val_unseen - mv: ./tmp/iin/val_unseen_embeddings -> ./tmp/iin/train_embeddings
+[2025-08-30 09:17:16] val_type=val_unseen - mv: ./data/datasets/ovon/hm3d/v2_new/val_unseen -> ./data/datasets/ovon/hm3d/v2_new/val
+[2025-08-30 09:17:16] val_type=val_unseen - 目录修改完成，执行eval后 后开始回退...
+[2025-08-30 09:18:08] val_type=val_unseen - REVERT: ./tmp/iin/train_embeddings -> ./tmp/iin/val_unseen_embeddings
+[2025-08-30 09:18:08] val_type=val_unseen - REVERT: ./data/datasets/ovon/hm3d/v2_new/val -> ./data/datasets/ovon/hm3d/v2_new/val_unseen
+[2025-08-30 09:18:08] val_type=val_unseen - 所有需要的目录已回退完成。
+
+[2025-08-30 09:23:54] val_type=val_unseen - mv: ./tmp/iin/val_unseen_embeddings -> ./tmp/iin/train_embeddings
+[2025-08-30 09:23:54] val_type=val_unseen - mv: ./data/datasets/ovon/hm3d/v2_new/val_unseen -> ./data/datasets/ovon/hm3d/v2_new/val
+[2025-08-30 09:23:54] val_type=val_unseen - 目录修改完成，执行eval后 后开始回退...
+[2025-08-30 10:05:46] val_type=val_unseen - REVERT: ./tmp/iin/train_embeddings -> ./tmp/iin/val_unseen_embeddings
+[2025-08-30 10:05:46] val_type=val_unseen - REVERT: ./data/datasets/ovon/hm3d/v2_new/val -> ./data/datasets/ovon/hm3d/v2_new/val_unseen
+[2025-08-30 10:05:46] val_type=val_unseen - 所有需要的目录已回退完成。
+
