@@ -1140,7 +1140,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     scenes = None
     if args.scene is not None:
-        scene_id = args.scene.split(".")[0] + ".basis.glb"
+        # Don't add .basis.glb suffix - use scene name directly
+        scene_id = args.scene.split(".")[0]
         scenes = [scene_id]
     else:
         split = args.split.split("_")[0]
